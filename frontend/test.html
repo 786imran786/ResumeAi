@@ -1,0 +1,750 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>ResumeAI — Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Poppins:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        /* 5-color palette total per brief */
+        --bg: #1c1f26;           /* neutral */
+        --text: #e6e9ef;         /* neutral */
+        --border: #2a2f3a;       /* neutral */
+        --brand: #39ff88;        /* primary brand neon green */
+        --accent: #00e5ff;       /* cyan accent */
+      }
+
+      * { box-sizing: border-box; }
+      html, body {
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        background: radial-gradient(1200px 800px at 80% -20%, rgba(0,229,255,0.07), transparent 60%),
+                    radial-gradient(1000px 700px at -10% 10%, rgba(57,255,136,0.08), transparent 60%),
+                    var(--bg);
+        color: var(--text);
+        font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+        line-height: 1.5;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 16px;
+      }
+
+      /* Top Nav */
+      .nav {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: center;
+        gap: 12px;
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        padding: 12px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        backdrop-filter: blur(10px);
+        background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+        box-shadow: 0 0 0 1px rgba(255,255,255,0.02), 0 10px 30px rgba(0,0,0,0.25);
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .logo {
+        width: 28px; height: 28px;
+        border-radius: 6px;
+        background: conic-gradient(from 180deg, var(--brand), var(--accent));
+        box-shadow: 0 0 18px rgba(57,255,136,0.45), 0 0 22px rgba(0,229,255,0.35) inset;
+      }
+      .brand-name {
+        font-family: Poppins, Inter, sans-serif;
+        font-weight: 700;
+        letter-spacing: 0.2px;
+        font-size: 18px;
+        position: relative;
+        display: inline-block;
+        color: var(--text);
+      }
+      .brand-name::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: -2px;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, var(--brand), var(--accent), transparent);
+        transform: translateX(-100%);
+        animation: shimmer 2.8s ease-in-out infinite;
+      }
+      @keyframes shimmer {
+        0%   { transform: translateX(-100%); opacity: 0; }
+        30%  { opacity: 1; }
+        70%  { opacity: 1; }
+        100% { transform: translateX(100%); opacity: 0; }
+      }
+
+      .search {
+        max-width: 520px;
+        width: 100%;
+        justify-self: center;
+        position: relative;
+      }
+      .search input {
+        width: 100%;
+        padding: 12px 40px 12px 40px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        background: rgba(255,255,255,0.03);
+        color: var(--text);
+        outline: none;
+        transition: border-color .2s ease, box-shadow .2s ease;
+      }
+      .search input::placeholder { color: #9aa4b2; }
+      .search .icon {
+        position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+        opacity: 0.8;
+      }
+
+      .nav-actions {
+        display: flex; align-items: center; gap: 10px; justify-self: end;
+      }
+      .icon-btn {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 36px; height: 36px; border-radius: 10px;
+        border: 1px solid var(--border);
+        background: rgba(255,255,255,0.03);
+        color: var(--text);
+        cursor: pointer;
+        transition: transform .15s ease, box-shadow .2s ease, border-color .2s ease;
+      }
+      .icon-btn:hover {
+        transform: translateY(-1px);
+        border-color: rgba(57,255,136,0.35);
+        box-shadow: 0 0 0 2px rgba(57,255,136,0.12) inset, 0 6px 18px rgba(0,0,0,0.25);
+      }
+      .avatar {
+        width: 36px; height: 36px; border-radius: 999px;
+        display: grid; place-items: center;
+        font-weight: 600; background: rgba(255,255,255,0.06);
+        border: 1px solid var(--border);
+      }
+
+      /* Grid */
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+        margin-top: 14px;
+      }
+      @media (min-width: 900px) {
+        .grid {
+          grid-template-columns: repeat(12, 1fr);
+          gap: 14px;
+        }
+      }
+
+      .card {
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+        backdrop-filter: blur(10px);
+        box-shadow: 0 0 0 1px rgba(255,255,255,0.02), 0 10px 30px rgba(0,0,0,0.25);
+        padding: 16px;
+        transition: transform .15s ease, box-shadow .2s ease, border-color .2s ease;
+      }
+      .card:hover {
+        transform: translateY(-2px);
+        border-color: rgba(0,229,255,0.25);
+        box-shadow: 0 0 0 2px rgba(0,229,255,0.12) inset, 0 12px 30px rgba(0,0,0,0.3);
+      }
+      .card h3 {
+        margin: 0 0 10px; font-size: 14px; letter-spacing: 0.4px; text-transform: uppercase;
+        color: #9aa4b2;
+      }
+
+      /* ATS Score */
+      .ats-score-wrap {
+        display: grid; grid-template-columns: 110px 1fr; gap: 14px; align-items: center;
+      }
+      .gauge {
+        position: relative; width: 110px; height: 110px;
+      }
+      .gauge svg { transform: rotate(-90deg); }
+      .gauge .bg {
+        stroke: rgba(255,255,255,0.08);
+      }
+      .gauge .progress {
+        stroke: url(#grad);
+        filter: drop-shadow(0 0 6px rgba(57,255,136,0.4));
+        transition: stroke-dashoffset .9s ease;
+      }
+      .gauge .center {
+        position: absolute; inset: 0; display: grid; place-items: center;
+        font-family: Poppins, Inter, sans-serif;
+        font-weight: 700; font-size: 22px;
+      }
+      .badge {
+        display: inline-flex; align-items: center; gap: 6px;
+        font-size: 12px; padding: 6px 10px; border-radius: 999px; margin-top: 8px;
+        background: rgba(57,255,136,0.12); color: var(--text); border: 1px solid rgba(57,255,136,0.35);
+        box-shadow: 0 0 0 1px rgba(57,255,136,0.15) inset, 0 6px 20px rgba(0,0,0,0.25);
+      }
+
+      /* Lists and Pills */
+      .list {
+        display: grid; gap: 8px;
+      }
+      .list-item {
+        display: grid; grid-template-columns: 20px 1fr; gap: 8px; align-items: start;
+      }
+      .check {
+        width: 20px; height: 20px; border-radius: 6px;
+        display: grid; place-items: center;
+        background: rgba(57,255,136,0.12); border: 1px solid rgba(57,255,136,0.35);
+      }
+      .pill-row { display: flex; flex-wrap: wrap; gap: 8px; }
+      .pill {
+        padding: 6px 10px; border-radius: 999px;
+        background: rgba(0,229,255,0.12);
+        border: 1px solid rgba(0,229,255,0.35);
+        color: var(--text);
+        transition: transform .15s ease, box-shadow .2s ease, border-color .2s ease;
+      }
+      .pill:hover {
+        transform: translateY(-1px);
+        border-color: rgba(57,255,136,0.35);
+        box-shadow: 0 0 0 1px rgba(57,255,136,0.15) inset;
+      }
+
+      /* Scroll box */
+      .scrollbox {
+        max-height: 220px; overflow: auto; padding-right: 4px;
+        border-radius: 10px; border: 1px dashed var(--border); padding: 12px;
+        background: rgba(255,255,255,0.02);
+      }
+      .scrollbox mark {
+        background: rgba(57,255,136,0.2);
+        color: var(--text);
+        border-radius: 4px; padding: 0 2px;
+      }
+      .errors {
+        margin-top: 8px; font-size: 14px; color: #cde6d5;
+      }
+
+      /* Actions / Tips */
+      .tips {
+        display: grid; gap: 8px;
+      }
+      .btn-copy {
+        margin-top: 8px; display: inline-flex; align-items: center; gap: 8px;
+        padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(57,255,136,0.35);
+        background: linear-gradient(180deg, rgba(57,255,136,0.16), rgba(57,255,136,0.12));
+        color: var(--text); cursor: pointer;
+        transition: transform .15s ease, box-shadow .2s ease, border-color .2s ease;
+      }
+      .btn-copy:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 0 0 2px rgba(57,255,136,0.15) inset, 0 12px 30px rgba(0,0,0,0.25);
+      }
+
+      /* Chart Box */
+      .chart-wrap {
+        position: relative; min-height: 220px;
+      }
+
+      /* Loading */
+      .loading {
+        display: none;
+        position: fixed; inset: 0; z-index: 60;
+        background: rgba(0,0,0,0.35);
+        backdrop-filter: blur(2px);
+        align-items: center; justify-content: center;
+      }
+      .loading.show { display: flex; }
+      .spinner {
+        width: 42px; height: 42px; border-radius: 50%;
+        border: 3px solid rgba(255,255,255,0.15);
+        border-top-color: var(--brand);
+        animation: spin 1s linear infinite, glow 1.8s ease-in-out infinite alternate;
+      }
+      @keyframes spin { to { transform: rotate(360deg); } }
+      @keyframes glow {
+        from { box-shadow: 0 0 18px rgba(57,255,136,0.35); }
+        to   { box-shadow: 0 0 30px rgba(0,229,255,0.35); }
+      }
+
+      /* Toasts */
+      .toast-wrap {
+        position: fixed; right: 16px; bottom: 16px; display: grid; gap: 8px; z-index: 70;
+      }
+      .toast {
+        display: grid; grid-template-columns: 22px 1fr; gap: 10px; align-items: center;
+        min-width: 260px;
+        padding: 12px 14px; border-radius: 12px;
+        border: 1px solid rgba(57,255,136,0.35);
+        background: linear-gradient(180deg, rgba(57,255,136,0.14), rgba(57,255,136,0.10));
+        color: var(--text);
+        box-shadow: 0 8px 30px rgba(0,0,0,0.35);
+        animation: slideIn .25s ease;
+      }
+      @keyframes slideIn {
+        from { opacity: 0; transform: translateY(8px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+
+      /* Footer */
+      footer {
+        margin: 20px 0 8px; text-align: center; color: #9aa4b2; font-size: 13px;
+      }
+
+      /* Layout placements for desktop */
+      .col-span-12 { grid-column: span 12; }
+      .col-span-6  { grid-column: span 6; }
+      .col-span-4  { grid-column: span 4; }
+      .col-span-8  { grid-column: span 8; }
+      @media (max-width: 899px) {
+        .col-span-6, .col-span-4, .col-span-8 { grid-column: span 12; }
+      }
+
+      /* Responsive refinements: nav stacking, gauge stack, chart heights, container spacing, text wrapping */
+      @media (max-width: 900px) {
+        /* Grid already collapses to 1 column; ensure consistent spacing */
+        .grid { grid-template-columns: 1fr; gap: 12px; }
+      }
+
+      @media (max-width: 680px) {
+        /* Stack nav items: brand → search → actions */
+        .nav {
+          grid-template-columns: 1fr;
+          grid-auto-rows: auto;
+          gap: 10px;
+          padding: 10px;
+        }
+        .search {
+          grid-column: 1;
+          justify-self: stretch;
+        }
+        .nav-actions {
+          justify-self: start;
+        }
+        .container {
+          padding: 12px;
+        }
+      }
+
+      @media (max-width: 600px) {
+        /* Stack gauge and caption; center gauge */
+        .ats-score-wrap {
+          grid-template-columns: 1fr;
+          text-align: center;
+        }
+        .gauge {
+          margin-inline: auto;
+        }
+        .chart-wrap {
+          min-height: 180px;
+        }
+      }
+
+      @media (min-width: 600px) and (max-width: 899px) {
+        .chart-wrap {
+          min-height: 200px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        /* Tighten controls and typography slightly on very small devices */
+        .brand-name { font-size: 16px; }
+        .icon-btn { width: 34px; height: 34px; }
+        .avatar { width: 34px; height: 34px; }
+        .card { padding: 14px; }
+      }
+
+      @media (max-width: 360px) {
+        /* Keep brand compact when space-constrained */
+        .brand-name { display: none; }
+      }
+
+      /* Ensure long tokens/URLs wrap on mobile to prevent overflow */
+      .scrollbox p, .list-item, .pill {
+        overflow-wrap: anywhere;
+        word-break: break-word;
+      }
+
+      /* Respect reduced motion preference */
+      @media (prefers-reduced-motion: reduce) {
+        * { animation: none !important; transition: none !important; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+
+      <header class="nav" role="navigation" aria-label="Top Navigation">
+        <div class="brand">
+          <div class="logo" aria-hidden="true"></div>
+          <div class="brand-name" aria-label="ResumeAI Logo">ResumeAI</div>
+        </div>
+        <div class="search" role="search">
+          <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M21 21l-4.3-4.3" stroke="#9aa4b2" stroke-width="1.6" stroke-linecap="round"/>
+            <circle cx="11" cy="11" r="7" stroke="#9aa4b2" stroke-width="1.6" />
+          </svg>
+          <input type="text" placeholder="Search for Resumes or Keywords" aria-label="Search for Resumes or Keywords"/>
+        </div>
+        <div class="nav-actions">
+          <button id="btnUpload" class="icon-btn" title="Upload" aria-label="Upload">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M12 16V4m0 0l-4 4m4-4l4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M20 16v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+          </button>
+          <button class="icon-btn" title="Reports" aria-label="Reports">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M4 20V10m6 10V4m6 16v-6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+          </button>
+          <button class="icon-btn" title="Settings" aria-label="Settings">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7z" stroke="currentColor" stroke-width="1.6"/>
+              <path d="M19.4 15a1.9 1.9 0 0 0 .38 2.1l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.9 1.9 0 0 0-2.1-.38c-.7.28-1.45.44-2.25.44s-1.55-.16-2.25-.44a1.9 1.9 0 0 0-2.1.38l-.06.06A2 2 0 1 1 4.17 17.2l.06-.06a1.9 1.9 0 0 0 2.1.38A7.8 7.8 0 0 1 12 4.17c.8 0 1.55.16 2.25.44a1.9 1.9 0 0 0 2.1-.38l.06-.06A2 2 0 1 1 19.83 6.99l-.06.06a1.9 1.9 0 0 0-.38 2.1c.28.7.44 1.45.44 2.25 0 .8-.16 1.55-.44 2.25z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <div class="avatar" aria-label="User menu">RA</div>
+        </div>
+      </header>
+
+
+      <main class="grid" role="main">
+  
+        <section class="card col-span-4" aria-labelledby="ats-title">
+          <h3 id="ats-title">ATS Score</h3>
+          <div class="ats-score-wrap">
+            <div class="gauge" aria-label="ATS Score Gauge">
+              <svg width="110" height="110" viewBox="0 0 120 120" aria-hidden="true">
+                <defs>
+                  <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="var(--brand)"/>
+                    <stop offset="100%" stop-color="var(--accent)"/>
+                  </linearGradient>
+                </defs>
+                <circle class="bg" cx="60" cy="60" r="50" fill="none" stroke-width="12"/>
+                <circle id="gaugeProgress" class="progress" cx="60" cy="60" r="50" fill="none" stroke-width="12"
+                        stroke-linecap="round" stroke-dasharray="314" stroke-dashoffset="314"/>
+              </svg>
+              <div class="center"><span id="atsScoreValue">--</span>%</div>
+            </div>
+            <div>
+              <div id="atsCaption" class="badge">Calculating...</div>
+              <p style="margin: 8px 0 0; color:#9aa4b2; font-size:14px;">Applicant Tracking System match level.</p>
+            </div>
+          </div>
+        </section>
+
+
+        <section class="card col-span-4" aria-labelledby="improve-title">
+          <h3 id="improve-title">Key Improvements</h3>
+          <div id="improvements" class="list" aria-live="polite"></div>
+        </section>
+
+
+        <section class="card col-span-4" aria-labelledby="missing-title">
+          <h3 id="missing-title">Keywords Missing</h3>
+          <div id="missingKeywords" class="pill-row" aria-live="polite"></div>
+        </section>
+
+    
+        <section class="card col-span-6" aria-labelledby="skills-title">
+          <h3 id="skills-title">Top Skills / Word Cloud</h3>
+          <div class="scrollbox" style="min-height:220px; display:grid; place-items:center;">
+            <div style="text-align:center; color:#9aa4b2">
+              <div style="font-weight:600; margin-bottom:6px;">Word Cloud Coming Soon</div>
+              <div style="font-size:14px;">Visualize dominant skills and terms from the resume.</div>
+            </div>
+          </div>
+        </section>
+
+
+        <section class="card col-span-6" aria-labelledby="overview-title">
+          <h3 id="overview-title">Resume Overview</h3>
+          <div id="overview" class="scrollbox" aria-live="polite">
+            <div style="color:#9aa4b2;">Loading summary…</div>
+          </div>
+          <div id="errors" class="errors" aria-live="polite"></div>
+        </section>
+
+        <section class="card col-span-6" aria-labelledby="match-title">
+          <h3 id="match-title">Match Percentage</h3>
+          <div class="chart-wrap">
+            <canvas id="matchChart" aria-label="Match Percentage Chart"></canvas>
+          </div>
+        </section>
+
+        <section class="card col-span-6" aria-labelledby="insights-title">
+          <h3 id="insights-title">Actionable Insights</h3>
+          <div id="tips" class="tips"></div>
+          <button id="copyTips" class="btn-copy" type="button" aria-label="Copy Tips">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <rect x="9" y="9" width="11" height="11" rx="2" stroke="currentColor" stroke-width="1.6"/>
+              <rect x="4" y="4" width="11" height="11" rx="2" stroke="currentColor" stroke-width="1.6" opacity="0.8"/>
+            </svg>
+            Copy Tips
+          </button>
+        </section>
+      </main>
+
+      <footer>
+        Powered by Gemini AI | ResumeAI © 2025
+      </footer>
+    </div>
+
+  
+    <div class="loading" id="loading" role="status" aria-live="polite" aria-label="Loading">
+      <div class="spinner" aria-hidden="true"></div>
+    </div>
+
+    <div class="toast-wrap" id="toasts" aria-live="polite" aria-atomic="true"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script>
+      const state = {
+        chart: null,
+        data: null,
+      };
+
+      function showLoading(show) {
+        const el = document.getElementById('loading');
+        if (!el) return;
+        el.classList.toggle('show', !!show);
+      }
+
+      function toast(message, sub) {
+        const wrap = document.getElementById('toasts');
+        const el = document.createElement('div');
+        el.className = 'toast';
+        el.innerHTML = `
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M20 7l-9 9-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <div>
+            <div style="font-weight:600">${message}</div>
+            ${sub ? `<div style="font-size:13px; color:#cfeede">${sub}</div>` : ''}
+          </div>
+        `;
+        wrap.appendChild(el);
+        setTimeout(() => {
+          el.style.transition = 'opacity .25s ease, transform .25s ease';
+          el.style.opacity = '0';
+          el.style.transform = 'translateY(8px)';
+          setTimeout(() => wrap.removeChild(el), 300);
+        }, 2800);
+      }
+
+      function captionFromScore(score) {
+        if (score >= 81) return 'Excellent';
+        if (score >= 60) return 'Good Match';
+        return 'Needs Work';
+      }
+
+      function updateGauge(score) {
+        const c = document.getElementById('gaugeProgress');
+        const v = document.getElementById('atsScoreValue');
+        const cap = document.getElementById('atsCaption');
+        const circumference = 2 * Math.PI * 50; // r=50
+        const offset = circumference - (score / 100) * circumference;
+        c.style.strokeDashoffset = String(offset);
+        v.textContent = String(score);
+        cap.textContent = captionFromScore(score);
+      }
+
+      function renderImprovements(list = []) {
+        const root = document.getElementById('improvements');
+        root.innerHTML = '';
+        list.forEach(item => {
+          const row = document.createElement('div');
+          row.className = 'list-item';
+          row.innerHTML = `
+            <div class="check">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M20 7l-9 9-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div>${item}</div>
+          `;
+          root.appendChild(row);
+        });
+      }
+
+      function renderMissingKeywords(kw = []) {
+        const root = document.getElementById('missingKeywords');
+        root.innerHTML = '';
+        kw.forEach(k => {
+          const pill = document.createElement('span');
+          pill.className = 'pill';
+          pill.textContent = k;
+          root.appendChild(pill);
+        });
+      }
+
+      function renderOverview(summary = '', errors = []) {
+        const box = document.getElementById('overview');
+        const errs = document.getElementById('errors');
+        box.innerHTML = '';
+        const p = document.createElement('p');
+        p.innerHTML = summary || '<span style="color:#9aa4b2">No summary provided.</span>';
+        box.appendChild(p);
+
+        errs.innerHTML = '';
+        if (errors.length) {
+          const title = document.createElement('div');
+          title.style.fontWeight = '600';
+          title.textContent = 'Grammatical Issues';
+          errs.appendChild(title);
+          errors.forEach(e => {
+            const li = document.createElement('div');
+            li.textContent = '• ' + e;
+            errs.appendChild(li);
+          });
+        }
+      }
+
+      function renderChart(score) {
+        const ctx = document.getElementById('matchChart');
+        if (state.chart) {
+          state.chart.destroy();
+          state.chart = null;
+        }
+        const gap = Math.max(0, 100 - score);
+        state.chart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: ['Match', 'Gap'],
+            datasets: [{
+              label: 'Percent',
+              data: [score, gap],
+              backgroundColor: [
+                'rgba(57,255,136,0.45)',
+                'rgba(0,229,255,0.35)',
+              ],
+              borderColor: [
+                'rgba(57,255,136,0.9)',
+                'rgba(0,229,255,0.9)',
+              ],
+              borderWidth: 1.25,
+              borderRadius: 8,
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: {
+                beginAtZero: true,
+                grid: { color: 'rgba(255,255,255,0.06)' },
+                ticks: { color: '#9aa4b2' }
+              },
+              x: {
+                grid: { display: false },
+                ticks: { color: '#9aa4b2' }
+              }
+            },
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                backgroundColor: 'rgba(20,24,30,0.95)',
+                titleColor: '#e6e9ef',
+                bodyColor: '#e6e9ef',
+                borderColor: 'rgba(255,255,255,0.08)',
+                borderWidth: 1,
+              }
+            },
+            animation: {
+              duration: 900,
+              easing: 'easeOutQuart'
+            }
+          }
+        });
+      }
+
+      function renderTips(tips = []) {
+        const root = document.getElementById('tips');
+        root.innerHTML = '';
+        tips.forEach(t => {
+          const div = document.createElement('div');
+          div.className = 'list-item';
+          div.innerHTML = `
+            <div class="check">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M20 7l-9 9-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div>${t}</div>
+          `;
+          root.appendChild(div);
+        });
+      }
+
+      async function loadData() {
+        showLoading(true);
+        try {
+          const res = await fetch('http://127.0.0.1:5000/latest-analysis', { cache: 'no-store', method: 'GET' ,credentials: 'include' });
+          const data = await res.json();
+          state.data = data;
+          // Update UI
+          updateGauge(data.ats_score ?? 0);
+          renderImprovements(data.improvement_tips || []);
+          renderMissingKeywords(data.missing_keywords || []);
+          renderOverview(data.summary || '', data.grammatical_errors || []);
+          renderTips(data.improvement_tips || []);
+          renderChart(data.ats_score ?? 0);
+        } catch (e) {
+          toast('Failed to load analysis', 'Please try again.');
+          console.error(e);
+        } finally {
+          showLoading(false);
+        }
+      }
+
+      async function copyTips() {
+        try {
+          const tips = state.data?.improvement_tips || [];
+          const text = tips.map((t, i) => `${i + 1}. ${t}`).join('\n');
+          await navigator.clipboard.writeText(text || 'No tips available.');
+          toast('Copied tips', 'You can paste these anywhere.');
+        } catch (e) {
+          toast('Copy failed', 'Clipboard permissions denied.');
+        }
+      }
+
+      function mockUploadFlow() {
+        showLoading(true);
+        setTimeout(async () => {
+          showLoading(false);
+          toast('✅ Resume analyzed successfully!', 'Insights generated using Gemini AI.');
+          await loadData(); // refresh data
+        }, 1200);
+      }
+
+      // Init
+      document.addEventListener('DOMContentLoaded', () => {
+        loadData();
+        document.getElementById('copyTips')?.addEventListener('click', copyTips);
+        document.getElementById('btnUpload')?.addEventListener('click', mockUploadFlow);
+      });
+    </script>
+  </body>
+</html>

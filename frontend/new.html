@@ -1,0 +1,267 @@
+
+<script>
+    // ==============================
+    // ELEMENT REFERENCES
+    // ==============================
+    const uploadBtn = document.getElementById('uploadBtn');
+    const userResumePreview = document.getElementById('userResumePreview');
+
+    const atsNum = document.getElementById('atsNum');
+    const miniAts = document.getElementById('miniAts');
+    const atsArc = document.getElementById('atsArc');
+
+    const kwBar = document.getElementById('kwBar');
+    const kwVal = document.getElementById('kwVal');
+
+    const donutArc = document.getElementById('donutArc');
+    const donutNum = document.getElementById('donutNum');
+
+    const gramVal = document.getElementById('gramVal');
+    const fmtVal = document.getElementById('fmtVal');
+
+    const sugKw = document.getElementById('sugKw');
+    const sugGram = document.getElementById('sugGram');
+    const sugFmt = document.getElementById('sugFmt');
+
+    const skillGapContent = document.getElementById('skillGapContent');
+    const skillGapValue = document.getElementById('skillGapValue');
+    const expLevelContent = document.getElementById('expLevelContent');
+    const expLevelValue = document.getElementById('expLevelValue');
+    const readabilityContent = document.getElementById('readabilityContent');
+    const readabilityValue = document.getElementById('readabilityValue');
+    const achievementContent = document.getElementById('achievementContent');
+    const achievementValue = document.getElementById('achievementValue');
+    const keywordsContainer = document.getElementById('keywordsContainer');
+    const summaryText = document.getElementById('summaryText');
+    const lastScanned = document.getElementById('lastScanned');
+
+    // ==============================
+    // UTILITY FUNCTIONS
+    // ==============================
+    function setATS(n) {
+        const radius = 48;
+        const circumference = 2 * Math.PI * radius;
+        const dash = (Math.max(0, Math.min(100, n)) / 100) * circumference;
+        atsArc.setAttribute('stroke-dasharray', `${dash} ${circumference - dash}`);
+        atsNum.textContent = n;
+        miniAts.textContent = n;
+    }
+
+    function setBar(el, pct) {
+        el.style.width = pct + '%';
+        el.style.background = 'linear-gradient(90deg, var(--accent-primary), var(--accent-secondary))';
+        return pct;
+    }
+
+    function setDonut(pct) {
+        const r = 15.9; const circ = 2 * Math.PI * r;
+        const dash = (pct / 100) * circ;
+        donutArc.setAttribute('stroke-dasharray', `${dash} ${circ - dash}`);
+        donutNum.textContent = pct + '%';
+    }
+
+    function setMini(el, pct) {
+        el.textContent = pct + '%';
+    }
+
+    // ==============================
+    // FETCH USER INFO
+    // ==============================
+    fetch("http://127.0.0.1:5000/user", {
+        method: "GET",
+        credentials: "include"
+    })
+        .then(res => {
+            if (!res.ok) throw new Error('Not logged in');
+            return res.json();
+        })
+        .then(data => {
+            if (data.email) {
+                const avatar = document.getElementById('user-avatar');
+                const name = document.getElementById('user-name');
+
+                if (data.picture) {
+                    avatar.innerHTML = '';
+                    const img = document.createElement('img');
+                    img.src = data.picture;
+                    img.alt = 'User Avatar';
+                    img.className = 'avatar';
+                    avatar.appendChild(img);
+                }
+
+                if (name && data.name) name.textContent = data.name;
+            }
+        })
+        .catch(err => console.log('User not logged in:', err));
+
+    // ==============================
+    // UPLOAD HANDLER
+    // ==============================
+    uploadBtn.addEventListener('click', async () => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.pdf,.doc,.docx,.txt';
+        input.onchange = async e => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            userResumePreview.innerHTML = '';
+
+            // === PREVIEW LOGIC ===
+            if (file.type === 'application/pdf') {
+                const pdfURL = URL.createObjectURL(file);
+                const iframe = document.createElement('iframe');
+                iframe.src = pdfURL;
+                iframe.style.width = '100%';
+                iframe.style.height = '600px';
+                iframe.style.border = '2px solid #ddd';
+                iframe.style.borderRadius = '10px';
+                iframe.style.boxShadow = '0 0 12px rgba(0,0,0,0.15)';
+                userResumePreview.appendChild(iframe);
+            } else if (file.type.includes('text')) {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    const pre = document.createElement('pre');
+                    pre.textContent = reader.result.slice(0, 2000) + (reader.result.length > 2000 ? '\n...\n(Preview truncated)' : '');
+                    pre.style.whiteSpace = 'pre-wrap';
+                    pre.style.maxHeight = '600px';
+                    pre.style.overflowY = 'auto';
+                    pre.style.background = '#f9f9f9';
+                    pre.style.padding = '1rem';
+                    pre.style.borderRadius = '10px';
+                    pre.style.fontFamily = 'monospace';
+                    userResumePreview.appendChild(pre);
+                };
+                reader.readAsText(file);
+            } else {
+                userResumePreview.textContent = `Uploaded file: ${file.name}`;
+            }
+
+            // === UPLOAD TO BACKEND ===
+            const formData = new FormData();
+            formData.append('resume', file);
+
+            try {
+                const res = await fetch('http://127.0.0.1:5000/uploadresume', {
+                    method: 'POST',
+                    credentials: 'include',
+                    body: formData
+                });
+                const data = await res.json();
+                if (data.error) {
+                    alert(`Error: ${data.error}`);
+                } else {
+                    const msg = document.createElement('div');
+                    msg.textContent = '✅ Resume uploaded successfully!';
+                    msg.style.color = 'green';
+                    msg.style.marginTop = '10px';
+                    userResumePreview.appendChild(msg);
+
+                    fetchLatestAnalysis();
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Upload failed!');
+            }
+        };
+        input.click();
+    });
+
+    // ==============================
+    // FETCH LATEST ANALYSIS
+    // ==============================
+    async function fetchLatestAnalysis() {
+        try {
+            const res = await fetch(`http://127.0.0.1:5000/latest-analysis?resume_id=${resumeId}`, {
+                credentials: "include"
+            });
+
+            const data = await res.json();
+            if (data.error) {
+                console.error(data.error);
+                return;
+            }
+
+            // === SHOW RESUME PREVIEW (just below header) ===
+            if (data.resume_filename) {
+                const fileUrl = `http://127.0.0.1:5000/uploads/${data.resume_filename}`;
+                userResumePreview.innerHTML = `
+                    <iframe src="${fileUrl}" style="
+                        width:100%;
+                        height:600px;
+                        border:2px solid #ddd;
+                        border-radius:10px;
+                        box-shadow:0 0 12px rgba(0,0,0,0.15);
+                    "></iframe>
+                `;
+            }
+
+            // === UPDATE DASHBOARD ===
+            if (data.ats_score !== undefined) setATS(data.ats_score);
+            if (data.missing_keywords) sugKw.textContent = "Add missing keywords: " + data.missing_keywords.join(', ');
+            if (data.grammatical_errors) sugGram.textContent = "Grammar issues: " + data.grammatical_errors.join(', ');
+            if (data.improvement_tips) sugFmt.textContent = "Tips: " + data.improvement_tips.join(', ');
+
+            if (data.ats_score !== undefined) {
+                const kwPct = Math.min(100, data.ats_score);
+                setBar(kwBar, kwPct);
+                kwVal.textContent = kwPct + '%';
+            }
+
+            const strength = data.ats_score || 80;
+            setDonut(strength);
+
+            const grammarScore = 100 - (data.grammatical_errors?.length || 0) * 5;
+            const formattingScore = 85;
+            setMini(gramVal, grammarScore);
+            setMini(fmtVal, formattingScore);
+
+            if (data.skill_gap !== undefined) {
+                skillGapValue.textContent = data.skill_gap + '%';
+                skillGapContent.textContent = data.skill_gap > 70 ?
+                    "Good match with target job requirements" :
+                    "Consider adding more relevant skills for target roles";
+            }
+
+            if (data.experience_level) {
+                expLevelValue.textContent = data.experience_level;
+                expLevelContent.textContent = "Based on roles and duration in your resume";
+            }
+
+            if (data.readability_score !== undefined) {
+                readabilityValue.textContent = data.readability_score + '/10';
+                readabilityContent.textContent = data.readability_score > 7 ?
+                    "Easy to read with clear structure" :
+                    "Consider simplifying complex sentences";
+            }
+
+            if (data.achievement_impact !== undefined) {
+                achievementValue.textContent = data.achievement_impact + '%';
+                achievementContent.textContent = data.achievement_impact > 70 ?
+                    "Strong quantifiable achievements" :
+                    "Add more metrics and results to your experience";
+            }
+
+            if (data.keywords && Array.isArray(data.keywords)) {
+                keywordsContainer.innerHTML = '';
+                data.keywords.slice(0, 6).forEach(keyword => {
+                    const keywordEl = document.createElement('div');
+                    keywordEl.className = 'keyword';
+                    keywordEl.textContent = keyword;
+                    keywordsContainer.appendChild(keywordEl);
+                });
+            }
+
+            if (data.summary) summaryText.textContent = data.summary;
+            if (data.last_scanned) lastScanned.textContent = data.last_scanned;
+
+        } catch (err) {
+            console.error('Failed to fetch analysis:', err);
+        }
+    }
+
+    // ==============================
+    // INITIAL FETCH
+    // ==============================
+    fetchLatestAnalysis();
+</script>

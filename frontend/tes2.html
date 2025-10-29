@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Resume Analyzer — Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#071226; --card:#0f2638; --muted:#9fb0c3; --accent:#38d7ff; --accent-2:#7b61ff;
+      --glass: rgba(255,255,255,0.03); --glass-2: rgba(255,255,255,0.02);
+      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%; margin:0; background:linear-gradient(180deg,#041028 0%, #071226 100%); color:#dbeaf6}
+    .app{display:flex; gap:24px; padding:28px; height:100vh}
+
+    /* Sidebar */
+    .sidebar{width:84px; background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-radius:16px; padding:18px; display:flex;flex-direction:column;align-items:center; gap:22px}
+    .logo{width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;font-weight:700;color:#021625}
+    .nav-btn{width:48px;height:48px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:transparent;border:1px solid transparent;color:var(--muted);cursor:pointer}
+    .nav-btn:hover{border-color:rgba(255,255,255,0.03); color:var(--accent)}
+
+    /* Main area */
+    .main{flex:1; display:flex; flex-direction:column; gap:18px}
+    .header{display:flex; align-items:center; justify-content:space-between}
+    .title{font-size:28px; font-weight:700}
+    .actions{display:flex; gap:12px; align-items:center}
+    .upload{background:linear-gradient(90deg,var(--accent),var(--accent-2));padding:8px 14px;border-radius:10px;color:#021625;font-weight:600;border:none;cursor:pointer}
+    .card-grid{display:grid;grid-template-columns:1fr 360px; gap:18px; align-items:start}
+
+    .panel{background:linear-gradient(180deg,var(--card), rgba(255,255,255,0.02)); border-radius:14px;padding:20px; box-shadow: 0 6px 20px rgba(2,18,30,0.35);border:1px solid rgba(255,255,255,0.02)}
+    .metrics{display:grid; grid-template-columns: 360px 1fr; gap:18px}
+
+    /* ATS circle */
+    .ats{display:flex;align-items:center;justify-content:center;height:260px}
+    .ats svg{width:220px;height:220px}
+    .ats .score{position:absolute;text-align:center}
+    .score .num{font-size:44px;font-weight:800;color: #e8f7ff}
+    .score .sub{font-size:12px;color:var(--muted)}
+
+    /* right metrics */
+    .right-metrics{display:flex;flex-direction:column;gap:16px}
+    .progress-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .bar{background:var(--glass);height:12px;border-radius:8px;flex:1;position:relative;overflow:hidden}
+    .bar > i{position:absolute;left:0;top:0;bottom:0;border-radius:8px}
+    .label{width:140px;font-weight:600}
+
+    .donut{width:120px;height:120px;display:flex;align-items:center;justify-content:center;position:relative}
+    .donut .num{position:absolute;font-weight:700}
+
+    /* bottom metrics */
+    .bottom-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+    .mini-gauge{display:flex;align-items:center;gap:12px}
+    .mini-gauge svg{width:120px;height:60px}
+
+    /* suggestions */
+    .suggestions{display:flex;gap:12px;margin-top:12px}
+    .suggestion{flex:1;padding:12px;border-radius:10px;background:linear-gradient(90deg, rgba(56,215,255,0.06), rgba(123,97,255,0.04));border:1px solid rgba(255,255,255,0.02);min-height:72px}
+    .suggestion h4{margin:0 0 6px 0;font-size:14px}
+    .suggestion p{margin:0;color:var(--muted);font-size:13px}
+
+    /* right preview */
+    .right-col{display:flex;flex-direction:column;gap:14px}
+    .resume-preview{padding:18px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.015), transparent);border:1px solid rgba(255,255,255,0.02)}
+    .rp-line{height:10px;background:rgba(255,255,255,0.02);border-radius:6px;margin:10px 0}
+    .badge{display:inline-block;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,0.02);font-weight:600;color:var(--muted)}
+
+@media (max-width:980px){
+  .bottom-row, .panel{
+    grid-template-columns: 1fr !important;
+    width: 100%;
+  }
+  #userResumePreview{
+    min-height:100px;
+  }
+}
+
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="logo">RA</div>
+      <button class="nav-btn" title="Upload">⬆️</button>
+      <button class="nav-btn" title="Dashboard">📊</button>
+      <button class="nav-btn" title="Reports">📁</button>
+      <button class="nav-btn" title="Settings">⚙️</button>
+    </aside>
+
+    <main class="main">
+      <div class="header">
+        <div class="title">Resume Analyzer</div>
+        <div class="actions">
+          <button class="upload" id="uploadBtn">Upload Resume</button>
+        </div>
+      </div>
+
+      <div class="card-grid">
+        <section class="panel">
+          <div class="metrics">
+            <div class="ats panel-inner" style="position:relative">
+              <!-- ATS radial SVG -->
+              <svg id="atsChart" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="g1" x1="0%" x2="100%">
+                    <stop offset="0%" stop-color="var(--accent)" />
+                    <stop offset="100%" stop-color="var(--accent-2)" />
+                  </linearGradient>
+                </defs>
+                <circle cx="60" cy="60" r="48" stroke="rgba(255,255,255,0.04)" stroke-width="12" fill="none"/>
+                <circle id="atsArc" cx="60" cy="60" r="48" stroke="url(#g1)" stroke-width="12" stroke-linecap="round" fill="none" transform="rotate(-90 60 60)" stroke-dasharray="0 1000"/>
+              </svg>
+              <div class="score" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center">
+                <div class="num" id="atsNum">--</div>
+                <div class="sub">/100</div>
+              </div>
+            </div>
+
+            <div class="right-metrics">
+              <div class="progress-row">
+                <div class="label">Keyword Match</div>
+                <div style="flex:1;display:flex;align-items:center;gap:12px">
+                  <div class="bar"><i id="kwBar"></i></div>
+                  <div class="label" style="width:60px;text-align:right" id="kwVal">--%</div>
+                </div>
+              </div>
+
+              <div style="display:flex;align-items:center;justify-content:space-between">
+                <div>
+                  <div style="font-weight:700">Resume Strength</div>
+                  <div style="display:flex;align-items:center;gap:14px;margin-top:8px">
+                    <div class="donut">
+                      <svg viewBox="0 0 42 42" width="120" height="120">
+                        <circle cx="21" cy="21" r="15.9" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="5" />
+                        <circle id="donutArc" cx="21" cy="21" r="15.9" fill="none" stroke="url(#g1)" stroke-width="5" stroke-linecap="round" transform="rotate(-90 21 21)" stroke-dasharray="0 100"/>
+                      </svg>
+                      <div class="num" id="donutNum">--%</div>
+                    </div>
+                    <div style="color:var(--muted);max-width:240px">High level resume strength computed from skills, experience, keywords and formatting.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bottom-row">
+            <div class="panel" style="padding:14px">
+              <div style="font-weight:700;margin-bottom:8px">Grammar Accuracy</div>
+              <div class="mini-gauge">
+                <svg viewBox="0 0 100 50"><path id="g1path" d="M10 40 C30 10,70 10,90 40" stroke-opacity="0.15" stroke-width="6" stroke="white" fill="none" stroke-linecap="round"/></svg>
+                <div style="font-weight:700;font-size:20px" id="gramVal">--%</div>
+              </div>
+            </div>
+
+            <div class="panel" style="padding:14px">
+              <div style="font-weight:700;margin-bottom:8px">Formatting Quality</div>
+              <div class="mini-gauge">
+                <svg viewBox="0 0 100 50"><path d="M10 40 C30 10,70 10,90 40" stroke-opacity="0.15" stroke-width="6" stroke="white" fill="none" stroke-linecap="round"/></svg>
+                <div style="font-weight:700;font-size:20px" id="fmtVal">--%</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top:12px">
+            <div style="font-weight:700;margin-bottom:8px">Personalized Suggestions</div>
+            <div class="suggestions">
+              <div class="suggestion">
+                <h4>Missing Keywords</h4>
+                <p id="sugKw">Add role-specific keywords (e.g. "REST API", "Docker", "AWS") in Experience & Skills sections.</p>
+              </div>
+
+              <div class="suggestion">
+                <h4>Grammar Alerts</h4>
+                <p id="sugGram">We found a few punctuation and tense inconsistencies. Fix these to improve readability.</p>
+              </div>
+
+              <div class="suggestion">
+                <h4>Design Hints</h4>
+                <p id="sugFmt">Use consistent spacing, remove extra lines, and use simple bullet points for achievements.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <aside class="right-col">
+          <div class="panel resume-preview">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div style="font-weight:800">John Doe</div>
+              <div class="badge">ATS: <span id="miniAts">--</span>/100</div>
+            </div>
+            <div class="rp-line" style="height:12px;width:38%"></div>
+            <div style="margin-top:8px;color:var(--muted)">Experience</div>
+            <div class="rp-line" style="height:10px;width:90%"></div>
+            <div class="rp-line" style="height:10px;width:70%"></div>
+            <div style="margin-top:12px;color:var(--muted)">Formatting</div>
+            <div class="rp-line" style="height:10px;width:56%"></div>
+            <div style="margin-top:12px;color:var(--muted)">Detected Keywords</div>
+            <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+              <div class="badge">Python</div>
+              <div class="badge">Flask</div>
+              <div class="badge">SQL</div>
+            </div>
+          </div>
+
+          <div class="panel" style="padding:16px">
+            <div style="font-weight:700;margin-bottom:8px">Summary</div>
+            <div style="color:var(--muted);line-height:1.5">This resume is well-structured with a strong skills section but needs slight formatting and keyword additions for specific job descriptions. Consider tailoring the summary and adding measurable results in achievements.</div>
+            <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center">
+              <div style="color:var(--muted)">Last scanned</div>
+              <div style="font-weight:700">Oct 15, 2025</div>
+            </div>
+          </div>
+        </aside>
+      </div>
+      <!-- Add this just before closing </main> -->
+<div class="panel" style="margin-top:18px; padding:16px; flex-direction:column;">
+  <div style="font-weight:700; margin-bottom:8px;">Uploaded Resume Preview</div>
+  <div id="userResumePreview" style="
+      background: rgba(255,255,255,0.02);
+      border:1px solid rgba(255,255,255,0.02);
+      border-radius:10px;
+      padding:12px;
+      min-height:120px;
+      max-height:300px;
+      overflow-y:auto;
+      color:var(--muted);
+      font-family: monospace;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+  ">No resume uploaded yet.</div>
+</div>
+
+    </main>
+  </div>
+
+
+<script>
+const uploadBtn = document.getElementById('uploadBtn');
+const userResumePreview = document.getElementById('userResumePreview');
+
+// Elements for updating dashboard
+const atsNum = document.getElementById('atsNum');
+const miniAts = document.getElementById('miniAts');
+const atsArc = document.getElementById('atsArc');
+
+const kwBar = document.getElementById('kwBar');
+const kwVal = document.getElementById('kwVal');
+
+const donutArc = document.getElementById('donutArc');
+const donutNum = document.getElementById('donutNum');
+
+const gramVal = document.getElementById('gramVal');
+const fmtVal = document.getElementById('fmtVal');
+
+const sugKw = document.getElementById('sugKw');
+const sugGram = document.getElementById('sugGram');
+const sugFmt = document.getElementById('sugFmt');
+
+// Utility functions
+function setATS(n) {
+  const radius = 48;
+  const circumference = 2 * Math.PI * radius;
+  const dash = (Math.max(0, Math.min(100, n))/100) * circumference;
+  atsArc.setAttribute('stroke-dasharray', `${dash} ${circumference - dash}`);
+  atsNum.textContent = n;
+  miniAts.textContent = n;
+}
+
+function setBar(el, pct){
+  el.style.width = pct + '%';
+  el.style.background = 'linear-gradient(90deg, var(--accent), var(--accent-2))';
+  return pct;
+}
+
+function setDonut(pct){
+  const r=15.9; const circ = 2*Math.PI*r;
+  const dash = (pct/100)*circ;
+  donutArc.setAttribute('stroke-dasharray', `${dash} ${circ-dash}`);
+  donutNum.textContent = pct + '%';
+}
+
+function setMini(el, pct){
+  el.textContent = pct + '%';
+}
+
+// Upload handler
+uploadBtn.addEventListener('click', async () => {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.pdf,.doc,.docx,.txt';
+  input.onchange = async e => {
+    const file = e.target.files[0];
+    if(!file) return;
+
+    // Show preview
+    if(file.type.includes('text')){
+      const reader = new FileReader();
+      reader.onload = () => userResumePreview.textContent = reader.result;
+      reader.readAsText(file);
+    } else {
+      userResumePreview.textContent = `Uploaded file: ${file.name}`;
+    }
+
+    // Upload to backend
+    const formData = new FormData();
+    formData.append('resume', file);
+
+    try {
+      const res = await fetch('http://127.0.0.1:5000/upload-resume', {
+        method: 'POST',
+        credentials: 'include',  // send cookies/session
+        body: formData
+      });
+      const data = await res.json();
+      if(data.error){
+        alert(`Error: ${data.error}`);
+      } else {
+        alert(data.message || 'Resume uploaded successfully!');
+        fetchLatestAnalysis();
+      }
+    } catch(err){
+      console.error(err);
+      alert('Upload failed!');
+    }
+  }
+  input.click();
+});
+
+// Fetch latest analysis
+async function fetchLatestAnalysis(){
+  try {
+    const res = await fetch('http://127.0.0.1:5000/latest-analysis', {
+      credentials: 'include'
+    });
+    const data = await res.json();
+    if(data.error){
+      console.error(data.error);
+      return;
+    }
+
+    // Update dashboard
+    if(data.ats_score !== undefined) setATS(data.ats_score);
+    if(data.missing_keywords) sugKw.textContent = "Add missing keywords: " + data.missing_keywords.join(', ');
+    if(data.grammatical_errors) sugGram.textContent = "Grammar issues: " + data.grammatical_errors.join(', ');
+    if(data.improvement_tips) sugFmt.textContent = "Tips: " + data.improvement_tips.join(', ');
+    
+    // Simulate keyword match bar from ATS or dummy value
+    if(data.ats_score !== undefined) {
+      const kwPct = Math.min(100, data.ats_score);
+      setBar(kwBar, kwPct);
+      kwVal.textContent = kwPct + '%';
+    }
+
+    // Resume strength donut (use dummy calculation if not provided)
+    const strength = data.ats_score || 80;
+    setDonut(strength);
+
+    // Grammar & formatting mini gauges (example placeholders)
+    const grammarScore = 100 - (data.grammatical_errors?.length || 0)*5;
+    const formattingScore = 85; // placeholder
+    setMini(gramVal, grammarScore);
+    setMini(fmtVal, formattingScore);
+
+  } catch(err){
+    console.error('Failed to fetch analysis:', err);
+  }
+}
+
+// Initial fetch
+fetchLatestAnalysis();
+</script>
+
+</body>
+</html>

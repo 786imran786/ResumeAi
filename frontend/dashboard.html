@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ResumeAI - AI Resume Analyzer</title>
+    <title>Hireme.ai - AI Resume Analyzer</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -667,6 +667,23 @@
             color: var(--accent);
         }
 
+        /* Success Message */
+        .success-message {
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .success-icon {
+            font-size: 4rem;
+            color: var(--accent);
+            margin-bottom: 1.5rem;
+        }
+
+        /* Notification Modal */
+        .notification-modal {
+            text-align: center;
+        }
+
         /* Responsive Design */
         @media (max-width: 768px) {
             h1 {
@@ -710,6 +727,30 @@
                 grid-template-columns: 1fr;
             }
         }
+#notification {
+  position: relative;
+  text-align: center;
+  margin: 10px auto;
+  padding: 12px 20px;
+  width: 80%;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: opacity 0.5s ease;
+  opacity: 0;
+  display: none;
+}
+
+#notification.success {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+#notification.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
 
         /* Animation classes */
         .fade-in {
@@ -728,11 +769,10 @@
     <!-- Navigation Bar -->
     <nav class="navbar">
         <div class="container nav-container">
-            <div class="logo">ResumeAI</div>
+            <div class="logo">Hireme.ai</div>
             <div class="nav-links">
                 <a href="#features" class="nav-link">Features</a>
-                <a href="#pricing" class="nav-link">Pricing</a>
-                <a href="test.html" class="nav-link">Dashboard</a>
+                <a href="overview_dash.html" class="nav-link">Dashboard</a>
                 <div class="user-profile" id="user-profile">
                     <div id="user-avatar" class="avatar">
                         <i class="fas fa-user"></i>
@@ -747,7 +787,7 @@
             </div>
         </div>
     </nav>
-
+<div id="notification"></div>
     <!-- Hero Section -->
     <section class="hero">
         <div class="container">
@@ -756,27 +796,9 @@
                 <p class="hero-subtitle">AI-powered insights to help you stand out and pass every recruiter's filter.</p>
                 <div class="hero-actions">
                     <a href="#" class="btn btn-primary" id="hero-upload-btn">Upload Resume</a>
-                    <a href="#demo" class="btn btn-secondary">See Demo</a>
                 </div>
             </div>
-            <div class="hero-mockup fade-in">
-                <div class="mockup-header">
-                    <div class="mockup-tabs">
-                        <div class="mockup-tab active">Analysis</div>
-                        <div class="mockup-tab">Recommendations</div>
-                        <div class="mockup-tab">Score</div>
-                    </div>
-                    <div style="color: var(--text-muted); font-size: 0.875rem;">Resume Score: 87%</div>
-                </div>
-                <div class="mockup-content">
-                    <div class="mockup-sidebar">
-                        <!-- Sidebar content would go here -->
-                    </div>
-                    <div class="mockup-main">
-                        <!-- Main content would go here -->
-                    </div>
-                </div>
-            </div>
+
         </div>
     </section>
 
@@ -877,8 +899,8 @@
         <div class="container">
             <div class="footer-content">
                 <div>
-                    <div class="footer-logo">ResumeAI</div>
-                    <div class="footer-tagline">© 2025 ResumeAI Inc.</div>
+                    <div class="footer-logo">Hireme.ai</div>
+                    <div class="footer-tagline">© 2025 Hireme.ai Inc.</div>
                 </div>
                 <div class="footer-links">
                     <a href="#" class="footer-link">About</a>
@@ -895,7 +917,7 @@
         <div class="modal">
             <div class="modal-header">
                 <h3 class="modal-title">Upload Your Resume</h3>
-                <button class="modal-close" id="close-upload-modal">&times;</button>
+                <button class="modal-close" id="close-upload-modal" type="button">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="upload-area" id="upload-area">
@@ -964,323 +986,343 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" id="cancel-upload">Cancel</button>
-                <button class="btn btn-primary" id="analyze-btn" disabled>Analyze Resume</button>
+                <button class="btn btn-secondary" id="cancel-upload" type="button">Cancel</button>
+                <button class="btn btn-primary" id="analyze-btn" type="button" >Analyze Resume</button>
             </div>
         </div>
     </div>
+
+    <!-- Success Modal -->
+    <!-- <div class="modal-overlay" id="success-modal">
+        <div class="modal">
+            <div class="modal-body">
+                <div class="success-message">
+                    <div class="success-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h3>Resume Uploaded Successfully!</h3>
+                    <p>You'll receive your detailed analysis in less than 5 minutes</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="success-ok">OK</button>
+            </div>
+        </div>
+    </div> -->
 
     <!-- Notification Modal -->
     <div class="modal-overlay" id="notification-modal">
         <div class="modal">
             <div class="modal-header">
                 <h3 class="modal-title" id="notification-title"></h3>
-                <button class="modal-close" id="close-notification">&times;</button>
+                <button class="modal-close" id="close-notification" type="button">&times;</button>
             </div>
-            <div class="modal-body" id="notification-body">
+            <div class="modal-body notification-modal" id="notification-body">
                 <!-- message will go here -->
             </div>
             <div class="modal-footer">
-                <button class="btn btn-primary" id="notification-ok">OK</button>
+                <button class="btn btn-primary" id="notification-ok" type="button">OK</button>
             </div>
         </div>
     </div>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+let protectAgainstUnload = false;
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // ===== FADE-IN ON SCROLL =====
-            const fadeElements = document.querySelectorAll('.fade-in');
-            const fadeInOnScroll = function() {
-                fadeElements.forEach(element => {
-                    const elementTop = element.getBoundingClientRect().top;
-                    const elementVisible = 150;
-                    if (elementTop < window.innerHeight - elementVisible) {
-                        element.classList.add('visible');
-                    }
+window.addEventListener('beforeunload', e => {
+  if (protectAgainstUnload) {
+    e.preventDefault();
+    e.returnValue = ''; // show popup only when necessary
+  }
+});
+
+
+    // =============================
+    // ELEMENT REFERENCES
+    // =============================
+    const uploadModal = document.getElementById('upload-modal');
+    const notificationModal = document.getElementById('notification-modal');
+    const analyzeButton = document.getElementById('analyze-btn');
+    const uploadArea = document.getElementById('upload-area');
+    const fileInput = document.getElementById('file-input');
+    const closeUploadModalButton = document.getElementById('close-upload-modal');
+    const closeNotificationButton = document.getElementById('close-notification');
+    const notificationTitle = document.getElementById('notification-title');
+    const notificationBody = document.getElementById('notification-body');
+    const notificationOkButton = document.getElementById('notification-ok');
+    const logoutButton = document.getElementById('logout-btn');
+    const roleRadios = document.querySelectorAll('input[name="role"]');
+    const companyRadios = document.querySelectorAll('input[name="company"]');
+    const roleSelectGroup = document.getElementById('role-select-group');
+    const companySelectGroup = document.getElementById('company-select-group');
+    const userProfile = document.getElementById('user-profile');
+    const profileDropdown = document.getElementById('profile-dropdown');
+
+    // =============================
+    // FADE-IN ANIMATION ON SCROLL
+    // =============================
+    const fadeElements = document.querySelectorAll('.fade-in');
+    const fadeInOnScroll = () => {
+        fadeElements.forEach(el => {
+            const top = el.getBoundingClientRect().top;
+            if (top < window.innerHeight - 150) el.classList.add('visible');
+        });
+    };
+    fadeInOnScroll();
+    window.addEventListener('scroll', fadeInOnScroll);
+
+    // =============================
+    // SMOOTH SCROLLING
+    // =============================
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', e => {
+            e.preventDefault();
+            const targetId = anchor.getAttribute('href');
+            if (targetId === '#') return;
+            const target = document.querySelector(targetId);
+            if (target) {
+                window.scrollTo({
+                    top: target.offsetTop - 80,
+                    behavior: 'smooth'
                 });
-            };
-            fadeInOnScroll();
-            window.addEventListener('scroll', fadeInOnScroll);
-
-            // ===== SMOOTH SCROLL FOR NAV LINKS =====
-            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-                anchor.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const targetId = this.getAttribute('href');
-                    if (targetId === '#') return;
-                    const targetElement = document.querySelector(targetId);
-                    if (targetElement) {
-                        window.scrollTo({
-                            top: targetElement.offsetTop - 80,
-                            behavior: 'smooth'
-                        });
-                    }
-                });
-            });
-
-            // ===== MODALS =====
-            const uploadModal = document.getElementById('upload-modal');
-            const notificationModal = document.getElementById('notification-modal');
-            const openModalButtons = [
-                document.getElementById('hero-upload-btn'),
-                document.getElementById('cta-upload-btn')
-            ];
-            const closeUploadModalButton = document.getElementById('close-upload-modal');
-            const closeNotificationButton = document.getElementById('close-notification');
-            const cancelButton = document.getElementById('cancel-upload');
-            const uploadArea = document.getElementById('upload-area');
-            const fileInput = document.getElementById('file-input');
-            const analyzeButton = document.getElementById('analyze-btn');
-            const roleRadios = document.querySelectorAll('input[name="role"]');
-            const companyRadios = document.querySelectorAll('input[name="company"]');
-            const roleSelectGroup = document.getElementById('role-select-group');
-            const companySelectGroup = document.getElementById('company-select-group');
-            const notificationOkButton = document.getElementById('notification-ok');
-            const notificationTitle = document.getElementById('notification-title');
-            const notificationBody = document.getElementById('notification-body');
-            const logoutButton = document.getElementById('logout-btn');
-
-            // Open upload modal
-            openModalButtons.forEach(button => {
-                if(button) {
-                    button.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        uploadModal.classList.add('active');
-                        document.body.style.overflow = 'hidden';
-                    });
-                }
-            });
-
-            // Close modals
-            function closeUploadModal() {
-                uploadModal.classList.remove('active');
-                document.body.style.overflow = 'auto';
-                fileInput.value = '';
-                uploadArea.classList.remove('active');
-                analyzeButton.disabled = true;
-                if(document.querySelector('input[name="role"][value="general"]')) {
-                    document.querySelector('input[name="role"][value="general"]').checked = true;
-                }
-                if(document.querySelector('input[name="company"][value="general"]')) {
-                    document.querySelector('input[name="company"][value="general"]').checked = true;
-                }
-                roleSelectGroup.classList.remove('active');
-                companySelectGroup.classList.remove('active');
-                
-                // Reset upload text
-                const uploadText = uploadArea.querySelector('.upload-text');
-                const uploadHint = uploadArea.querySelector('.upload-hint');
-                if(uploadText) uploadText.textContent = 'Drag & drop your resume here';
-                if(uploadHint) uploadHint.textContent = 'Supports PDF, DOC, DOCX (Max 5MB)';
-            }
-
-            function closeNotificationModal() {
-                notificationModal.classList.remove('active');
-                document.body.style.overflow = 'auto';
-            }
-
-            if(closeUploadModalButton) closeUploadModalButton.addEventListener('click', closeUploadModal);
-            if(closeNotificationButton) closeNotificationButton.addEventListener('click', closeNotificationModal);
-            if(cancelButton) cancelButton.addEventListener('click', closeUploadModal);
-            if(notificationOkButton) notificationOkButton.addEventListener('click', closeNotificationModal);
-
-            // Close modals when clicking outside
-            if(uploadModal){
-                uploadModal.addEventListener('click', function(e) {
-                    if (e.target === uploadModal) closeUploadModal();
-                });
-            }
-            
-            if(notificationModal){
-                notificationModal.addEventListener('click', function(e) {
-                    if (e.target === notificationModal) closeNotificationModal();
-                });
-            }
-
-            // ===== UPLOAD AREA =====
-            if(uploadArea){
-                uploadArea.addEventListener('click', () => fileInput.click());
-                uploadArea.addEventListener('dragover', e => { 
-                    e.preventDefault(); 
-                    uploadArea.classList.add('active'); 
-                });
-                uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('active'));
-                uploadArea.addEventListener('drop', e => {
-                    e.preventDefault();
-                    uploadArea.classList.remove('active');
-                    if(e.dataTransfer.files.length){
-                        fileInput.files = e.dataTransfer.files;
-                        validateFile();
-                    }
-                });
-            }
-
-            if(fileInput) fileInput.addEventListener('change', validateFile);
-
-            function validateFile() {
-                if(fileInput.files.length > 0){
-                    const file = fileInput.files[0];
-                    const fileTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-                    const fileSize = file.size / 1024 / 1024; // MB
-
-                    if(fileTypes.includes(file.type) && fileSize <= 5){
-                        const uploadText = uploadArea.querySelector('.upload-text');
-                        const uploadHint = uploadArea.querySelector('.upload-hint');
-                        if(uploadText) uploadText.textContent = file.name;
-                        if(uploadHint) uploadHint.textContent = 'File ready for analysis';
-                        uploadArea.classList.add('active');
-                        analyzeButton.disabled = false;
-                    } else {
-                        showNotification('⚠️ Error', 'Please upload a valid PDF or Word document under 5MB');
-                        fileInput.value = '';
-                        analyzeButton.disabled = true;
-                    }
-                }
-            }
-
-            // Role & Company selection toggle
-            roleRadios.forEach(radio => radio.addEventListener('change', function() {
-                if(this.value === 'specific') roleSelectGroup.classList.add('active');
-                else roleSelectGroup.classList.remove('active');
-            }));
-            
-            companyRadios.forEach(radio => radio.addEventListener('change', function() {
-                if(this.value === 'specific') companySelectGroup.classList.add('active');
-                else companySelectGroup.classList.remove('active');
-            }));
-
-            // Analyze button handler
-            analyzeButton.addEventListener('click', function() {
-                if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
-                    showNotification("⚠️ Error", "Please select a file first.");
-                    return;
-                }
-
-                const formData = new FormData();
-                formData.append('resume', fileInput.files[0]);
-
-                // Add targeting options if selected
-                const roleTarget = document.querySelector('input[name="role"]:checked').value;
-                if (roleTarget === 'specific') {
-                    const roleSelect = document.getElementById('role-select');
-                    if (roleSelect.value) {
-                        formData.append('target_role', roleSelect.value);
-                    }
-                }
-
-                const companyTarget = document.querySelector('input[name="company"]:checked').value;
-                if (companyTarget === 'specific') {
-                    const companySelect = document.getElementById('company-select');
-                    if (companySelect.value) {
-                        formData.append('target_company', companySelect.value);
-                    }
-                }
-
-                fetch('http://127.0.0.1:5000/upload-resume', {
-                    method: 'POST',
-                    body: formData,
-                    credentials: 'include'
-                })
-                .then(res => {
-                    if (!res.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return res.json();
-                })
-                .then(data => {
-                    if (data.status === 'pending') {
-                        showNotification("⏳ Already in Queue", data.message);
-                    } else if (data.status === 'ok') {
-                        showNotification("✅ Resume Uploaded", data.message);
-                    } else {
-                        showNotification("⚠️ Error", data.error || "Something went wrong!");
-                    }
-                    closeUploadModal();
-                })
-                .catch(err => {
-                    console.error('Upload error:', err);
-                    showNotification("⚠️ Upload Failed", "Please try again.");
-                    closeUploadModal();
-                });
-            });
-
-            // ===== USER PROFILE DROPDOWN =====
-            const profile = document.getElementById('user-profile');
-            const dropdown = document.getElementById('profile-dropdown');
-
-            if(profile){
-                profile.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
-                });
-            }
-
-            window.addEventListener('click', () => {
-                if(dropdown) dropdown.style.display = 'none';
-            });
-
-            // ===== FETCH USER INFO =====
-            fetch("http://127.0.0.1:5000/user",{
-                  method: "GET",
-                  credentials: "include" 
-            })
-                .then(res => {
-                    if (!res.ok) {
-                        throw new Error('Not logged in');
-                    }
-                    return res.json();
-                })
-                .then(data => {
-                    if (data.email) {
-                        const avatar = document.getElementById('user-avatar');
-                        const name = document.getElementById('user-name');
-                        
-                        if (data.picture) {
-                            avatar.innerHTML = '';
-                            const img = document.createElement('img');
-                            img.src = data.picture;
-                            img.alt = 'User Avatar';
-                            img.className = 'avatar';
-                            avatar.appendChild(img);
-                        }
-                        
-                        if(name && data.name) name.textContent = data.name;
-                    } else {
-                        console.log('No user data found');
-                    }
-                })
-                .catch(err => {
-                    console.log('User not logged in:', err);
-                    // No redirect since we're on dashboard
-                });
-
-            // Logout handler
-            if (logoutButton) {
-                logoutButton.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    // Clear session and redirect to login
-                    fetch('http://127.0.0.1:5000/logout', { 
-                        method: 'POST',
-                        credentials: 'include'
-                    })
-                    .then(() => {
-                        window.location.href = '/';
-                    })
-                    .catch(err => {
-                        console.error('Logout error:', err);
-                        window.location.href = '/';
-                    });
-                });
-            }
-
-            // ===== NOTIFICATION FUNCTION =====
-            function showNotification(title, message) {
-                notificationTitle.textContent = title;
-                notificationBody.textContent = message;
-                notificationModal.classList.add('active');
-                document.body.style.overflow = 'hidden';
             }
         });
-    </script>
+    });
+
+    // =============================
+    // MODAL HANDLERS
+    // =============================
+    const openModal = modal => {
+        if (!modal) return;
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    };
+
+    const closeModal = modal => {
+        if (!modal) return;
+        modal.classList.remove('active');
+        document.body.style.overflow = 'auto';
+    };
+
+    const resetUploadForm = () => {
+        if (fileInput) fileInput.value = '';
+        if (uploadArea) uploadArea.classList.remove('active');
+        if (analyzeButton) {
+            analyzeButton.disabled = true;
+            analyzeButton.textContent = 'Analyze Resume';
+        }
+
+        const generalRole = document.querySelector('input[name="role"][value="general"]');
+        const generalCompany = document.querySelector('input[name="company"][value="general"]');
+        if (generalRole) generalRole.checked = true;
+        if (generalCompany) generalCompany.checked = true;
+
+        roleSelectGroup?.classList.remove('active');
+        companySelectGroup?.classList.remove('active');
+
+        if (uploadArea) {
+            uploadArea.querySelector('.upload-text').textContent = 'Drag & drop your resume here';
+            uploadArea.querySelector('.upload-hint').textContent = 'Supports PDF, DOC, DOCX (Max 5MB)';
+        }
+    };
+
+function showNotification(message, type = 'success') {
+  const notification = document.getElementById('notification');
+  notification.className = type; // set style
+  notification.innerHTML = message; // set message
+  notification.style.display = 'block';
+  setTimeout(() => (notification.style.opacity = 1), 10);
+
+  // Auto-hide after 3 seconds
+  setTimeout(() => {
+    notification.style.opacity = 0;
+    setTimeout(() => (notification.style.display = 'none'), 500);
+  }, 3000);
+}
+    // =============================
+    // MODAL EVENT LISTENERS
+    // =============================
+    document.querySelectorAll('#hero-upload-btn, #cta-upload-btn').forEach(btn => {
+        btn?.addEventListener('click', e => {
+            e.preventDefault();
+            e.stopPropagation();
+            openModal(uploadModal);
+        });
+    });
+
+    closeUploadModalButton?.addEventListener('click', () => {
+        closeModal(uploadModal);
+        resetUploadForm();
+    });
+    closeNotificationButton?.addEventListener('click', () => closeModal(notificationModal));
+    notificationOkButton?.addEventListener('click', () => closeModal(notificationModal));
+
+    // Click outside modals to close
+    uploadModal?.addEventListener('click', e => { if (e.target === uploadModal) closeModal(uploadModal); });
+    notificationModal?.addEventListener('click', e => { if (e.target === notificationModal) closeModal(notificationModal); });
+
+    // =============================
+    // UPLOAD AREA LOGIC
+    // =============================
+    const validateFile = () => {
+        if (!fileInput?.files.length) return;
+
+        const file = fileInput.files[0];
+        const allowed = [
+            'application/pdf',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        ];
+        const sizeMB = file.size / 1024 / 1024;
+
+        if (!allowed.includes(file.type) || sizeMB > 5) {
+            showNotification('⚠️ Error', 'Please upload a valid PDF or Word document under 5MB.');
+            fileInput.value = '';
+            analyzeButton.disabled = true;
+            return;
+        }
+
+        const uploadText = uploadArea.querySelector('.upload-text');
+        const uploadHint = uploadArea.querySelector('.upload-hint');
+        uploadText.textContent = file.name;
+        uploadHint.textContent = 'File ready for analysis';
+        uploadArea.classList.add('active');
+        analyzeButton.disabled = false;
+    };
+
+    uploadArea?.addEventListener('click', e => { e.stopPropagation(); fileInput?.click(); });
+    uploadArea?.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('active'); });
+    uploadArea?.addEventListener('dragleave', () => uploadArea.classList.remove('active'));
+    uploadArea?.addEventListener('drop', e => {
+        e.preventDefault();
+        uploadArea.classList.remove('active');
+        if (e.dataTransfer.files.length) {
+            fileInput.files = e.dataTransfer.files;
+            validateFile();
+        }
+    });
+    fileInput?.addEventListener('change', validateFile);
+
+    // =============================
+    // ROLE & COMPANY TOGGLE
+    // =============================
+    roleRadios.forEach(radio => {
+        radio.addEventListener('change', () => {
+            if (radio.value === 'specific') roleSelectGroup?.classList.add('active');
+            else roleSelectGroup?.classList.remove('active');
+        });
+    });
+    companyRadios.forEach(radio => {
+        radio.addEventListener('change', () => {
+            if (radio.value === 'specific') companySelectGroup?.classList.add('active');
+            else companySelectGroup?.classList.remove('active');
+        });
+    });
+
+    // =============================
+    // 🚀 UPDATED ANALYZE BUTTON LOGIC
+    // =============================
+    analyzeButton?.addEventListener('click', async (e) => {
+        e.preventDefault(); // Prevent any form-like behavior
+        e.stopPropagation();
+
+        console.log("Analyze clicked ✅");
+
+        if (!fileInput?.files.length) {
+            showNotification('⚠️ No File', 'Please select a resume before analyzing.');
+            return;
+        }
+
+        analyzeButton.disabled = true;
+        analyzeButton.textContent = 'Analyzing...';
+
+        // Prepare FormData
+        const formData = new FormData();
+        formData.append('resume', fileInput.files[0]);
+
+        const roleTarget = document.querySelector('input[name="role"]:checked');
+        if (roleTarget?.value === 'specific') {
+            const roleSelect = document.getElementById('role-select');
+            if (roleSelect?.value) formData.append('target_role', roleSelect.value);
+        }
+
+        const companyTarget = document.querySelector('input[name="company"]:checked');
+        if (companyTarget?.value === 'specific') {
+            const companySelect = document.getElementById('company-select');
+            if (companySelect?.value) formData.append('target_company', companySelect.value);
+        }
+
+        showNotification('📨 Uploading', 'Your resume is being analyzed. Please wait...');
+
+        try {
+            const res = await fetch('http://127.0.0.1:5000/uploadresume', {
+                method: 'POST',
+                body: formData,
+                credentials: 'include'
+            });
+
+            const data = await res.json();
+
+            if (res.ok && data.message) {
+                showNotification('✅ Success', data.message);
+            } else {
+                showNotification('⚠️ Failed', data.error || 'Something went wrong.');
+            }
+        } catch (err) {
+            console.error("Upload error:", err);
+            showNotification('❌ Error', 'Failed to connect to the server.');
+        } finally {
+            analyzeButton.disabled = false;
+            analyzeButton.textContent = 'Analyze Resume';
+        }
+    });
+
+    // =============================
+    // FETCH USER DATA
+    // =============================
+    fetch('http://127.0.0.1:5000/user', {
+        method: 'GET',
+        credentials: 'include'
+    })
+    .then(res => res.ok ? res.json() : null)
+    .then(data => {
+        if (!data) return;
+        const avatar = document.getElementById('user-avatar');
+        const name = document.getElementById('user-name');
+        if (data.picture && avatar) {
+            avatar.innerHTML = `<img src="${data.picture}" alt="User Avatar" class="avatar" />`;
+        }
+        if (data.name && name) name.textContent = data.name;
+    })
+    .catch(err => console.error('User fetch error:', err));
+
+    // =============================
+    // LOGOUT
+    // =============================
+    logoutButton?.addEventListener('click', e => {
+        e.preventDefault();
+        fetch('http://127.0.0.1:5000/logout', {
+            method: 'POST',
+            credentials: 'include'
+        })
+        .then(() => window.location.href = '/')
+        .catch(() => window.location.href = '/');
+    });
+
+    // =============================
+    // USER PROFILE DROPDOWN
+    // =============================
+    userProfile?.addEventListener('click', e => {
+        e.stopPropagation();
+        profileDropdown.style.display = profileDropdown.style.display === 'block' ? 'none' : 'block';
+    });
+    document.addEventListener('click', () => { if (profileDropdown) profileDropdown.style.display = 'none'; });
+});
+document.querySelectorAll('form').forEach(form => {
+    form.addEventListener('submit', e => e.preventDefault());
+});
+</script>
+
+
 </body>
 </html>

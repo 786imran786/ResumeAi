@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hireme.ai | Dashboard Overview</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #111111;
+            --bg-tertiary: #1a1a1a;
+            --accent-primary: #3b82f6;
+            --accent-secondary: #1e40af;
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-muted: #64748b;
+            --border-color: #2d3748;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Utility classes */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .mb-1 { margin-bottom: 1rem; }
+        .mb-2 { margin-bottom: 2rem; }
+        .mb-3 { margin-bottom: 3rem; }
+        .mb-4 { margin-bottom: 4rem; }
+
+        .mt-1 { margin-top: 1rem; }
+        .mt-2 { margin-top: 2rem; }
+        .mt-3 { margin-top: 3rem; }
+        .mt-4 { margin-top: 4rem; }
+
+        /* Button styles */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            text-decoration: none;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background-color: var(--accent-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--accent-secondary);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Header & Navigation */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 100;
+            background-color: rgba(10, 10, 10, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+        }
+
+        .logo {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--text-primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--text-primary);
+        }
+
+        /* Dashboard Styles */
+        .dashboard {
+            display: flex;
+            min-height: 100vh;
+            padding-top: 70px;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            padding: 2rem 1rem;
+            position: fixed;
+            height: calc(100vh - 70px);
+            overflow-y: auto;
+        }
+
+        .sidebar-logo {
+            font-weight: 700;
+            font-size: 1.25rem;
+            margin-bottom: 2rem;
+            padding: 0 1rem;
+        }
+
+        .sidebar-nav {
+            list-style: none;
+        }
+
+        .sidebar-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar-link:hover, .sidebar-link.active {
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 250px;
+            padding: 2rem;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .dashboard-title {
+            font-size: 1.75rem;
+            font-weight: 600;
+        }
+
+        .dashboard-subtitle {
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-primary);
+        }
+
+        .stat-title {
+            color: var(--text-secondary);
+            font-size: 0.57rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-description {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        /* Main Analysis Section */
+        .analysis-container {
+            background-color: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .analysis-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .analysis-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .search-bar {
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            color: var(--text-primary);
+            width: 200px;
+        }
+
+        .search-bar:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+        }
+
+        .resume-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .resume-table th {
+            text-align: left;
+            padding: 1rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .resume-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .resume-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .resume-table tr:hover {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        .score-high {
+            color: var(--success);
+            font-weight: 600;
+        }
+
+        .score-medium {
+            color: var(--warning);
+            font-weight: 600;
+        }
+
+        .score-low {
+            color: var(--error);
+            font-weight: 600;
+        }
+
+        /* Additional Info Section */
+        .insights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .insight-card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .insight-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .insight-list {
+            list-style: none;
+        }
+
+        .insight-item {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .insight-item:last-child {
+            border-bottom: none;
+        }
+
+        .chart-placeholder {
+            height: 150px;
+            background-color: var(--bg-tertiary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            margin-top: 1rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .insights-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: static;
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .analysis-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+            
+            .controls {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .search-bar {
+                width: 100%;
+            }
+            
+            .resume-table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="dashboard">
+        <header>
+            <div class="container">
+                <nav class="navbar">
+                    <a href="#" class="logo">Hireme.ai</a>
+                    <div class="nav-links">
+                        <a href="#" class="nav-link">Features</a>
+                        <a href="#" class="nav-link">Pricing</a>
+                        <a href="#" class="nav-link">Help</a>
+                        <a href="#" class="btn btn-primary">Analyze New Resume</a>
+                    </div>
+                </nav>
+            </div>
+        </header>
+
+        <div class="dashboard">
+            <div class="sidebar">
+                <div class="sidebar-logo">Hireme.ai</div>
+                <ul class="sidebar-nav">
+                    <li class="sidebar-item">
+                        <a href="#" class="sidebar-link active">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M9 22V12H15V22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="#" class="sidebar-link">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M9 17V15M12 17V13M15 17V11M5 21H19C19.5304 21 20.0391 20.7893 20.4142 20.4142C20.7893 20.0391 21 19.5304 21 19V5C21 4.46957 20.7893 3.96086 20.4142 3.58579C20.0391 3.21071 19.5304 3 19 3H5C4.46957 3 3.96086 3.21071 3.58579 3.58579C3.21071 3.96086 3 4.46957 3 5V19C3 19.5304 3.21071 20.0391 3.58579 20.4142C3.96086 20.7893 4.46957 21 5 21Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            Reports
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="#" class="sidebar-link">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M19.4 15C19.2669 15.3031 19.1338 15.6062 19.0006 15.9094C18.5297 16.9078 17.9584 17.857 17.295 18.7438C16.3344 20.0281 15.1875 21.15 13.8938 22.0688C12.6 22.9875 11.175 23.6906 9.675 24.15C9.225 24.2906 8.76844 24.4125 8.30625 24.5156C7.545 24.7031 6.9375 23.9906 7.05938 23.2312C7.17422 22.5117 7.2525 21.7861 7.29375 21.0577C7.33125 20.4033 6.84375 19.8347 6.1875 19.7812C5.0625 19.6875 3.98438 19.3594 3 18.75C2.19375 18.2531 1.49062 17.5906 0.9375 16.8094C0.6375 16.3875 0.375 15.9375 0.15 15.4688C-0.31875 14.4844 0.459375 13.4437 1.49625 13.5844C2.39156 13.7062 3.2625 13.9406 4.0875 14.2781C4.85625 14.5922 5.3625 15.3469 5.33438 16.1719C5.35172 16.6078 5.33016 17.0442 5.26992 17.4764C5.21719 17.8519 5.59031 18.1312 5.94375 18.0281C7.15969 17.6578 8.32172 17.1203 9.39375 16.4316C10.6125 15.6516 11.5219 14.4469 11.9438 13.0406C12.1406 12.3844 12.2438 11.7 12.2438 11.0062C12.2438 9.52828 11.6555 8.11071 10.6069 7.06213C9.55835 6.01355 8.14078 5.42531 6.66281 5.42531C5.89359 5.42531 5.13422 5.57109 4.425 5.85375C3.90938 6.05625 3.43125 6.32812 3 6.65906C2.39062 7.13438 1.52812 6.95625 1.19062 6.2625C0.853125 5.56875 1.17188 4.74375 1.86562 4.40625C2.55938 4.06875 3.38438 4.3875 3.8625 4.9125C4.125 5.20312 4.41562 5.46797 4.72969 5.70234C5.68594 5.28656 6.71836 5.06783 7.7625 5.06016C8.99062 5.06016 10.1812 5.36719 11.25 5.94844C12.3188 6.52969 13.2281 7.36758 13.8941 8.38641C14.5602 9.40523 14.9625 10.5738 15.0656 11.7877C15.1688 13.0016 14.9695 14.2239 14.4844 15.3488C14.2969 15.7852 14.7188 16.2216 15.1688 16.0688C16.3219 15.6797 17.3906 15.0703 18.3219 14.2781C18.9281 13.7719 19.4719 13.1906 19.9406 12.5469C20.4094 11.9031 20.4844 11.0625 20.1281 10.35C19.7719 9.6375 19.0312 9.1875 18.2219 9.1875C17.7188 9.1875 17.2406 9.375 16.8844 9.70312C16.5281 10.0312 16.3219 10.4738 16.3125 10.9406C16.3125 11.2734 16.4156 11.5969 16.6031 11.8688C16.7906 12.1406 17.0531 12.3469 17.3531 12.4594C17.6531 12.5719 17.975 12.5844 18.2812 12.4953C18.5875 12.4062 18.8625 12.2203 19.0656 11.9625C19.2688 11.7047 19.3894 11.3883 19.4109 11.0564C19.4325 10.7245 19.354 10.3941 19.1859 10.1086C19.0178 9.82303 18.7684 9.59578 18.4699 9.45656C18.1714 9.31734 17.8377 9.27281 17.5125 9.32812C17.4562 9.3375 17.3984 9.3375 17.3422 9.32812C16.9031 9.2625 16.5281 8.9625 16.3781 8.55C16.2281 8.1375 16.3312 7.68164 16.6406 7.37109C17.4188 6.59297 18.375 6.02016 19.4281 5.70047C20.4812 5.38078 21.6 5.32359 22.6819 5.53359C23.7638 5.74359 24.7766 6.21422 25.6312 6.90375C26.4859 7.59328 27.1562 8.48016 27.5812 9.48375C28.0062 10.4873 28.1733 11.5767 28.0687 12.6562C27.9641 13.7358 27.5911 14.7727 26.9812 15.668C26.3714 16.5633 25.5431 17.2894 24.5681 17.7797C23.5931 18.27 22.5023 18.5086 21.4031 18.4725C20.8594 18.4547 20.4375 18.9844 20.5688 19.5094C20.7 20.0344 21.3375 20.3156 21.8438 20.4562C23.3438 20.8688 24.9469 20.7281 26.3531 20.0625C27.7594 19.3969 28.875 18.2531 29.4844 16.8469C30.0938 15.4406 30.15 13.875 29.6438 12.4312C29.1375 10.9875 28.1062 9.76875 26.7375 9.01078C25.3687 8.25281 23.7656 8.01047 22.2281 8.32547C20.6906 8.64047 19.3406 9.49078 18.4219 10.7062C18.0656 11.1937 17.8125 11.7469 17.6766 12.3314C17.5406 12.9159 17.5247 13.5197 17.6297 14.1094C17.7347 14.6991 17.9584 15.2625 18.287 15.7659C18.6156 16.2694 19.0422 16.7025 19.5412 17.0391C20.0402 17.3756 20.6016 17.6086 21.1922 17.7244C21.7828 17.8402 22.3906 17.8363 22.9795 17.7129C23.5684 17.5895 24.1266 17.349 24.6202 17.0044C25.1138 16.6598 25.5328 16.2179 25.8525 15.7055C26.1722 15.1931 26.3859 14.6203 26.4816 14.0213C26.5772 13.4222 26.5528 12.8094 26.4099 12.2194C26.267 11.6294 26.0088 11.0742 25.65 10.5877C25.2912 10.1012 24.8391 9.69328 24.3211 9.38859C23.8031 9.08391 23.2303 9.08891 22.6375 9.81531C22.0447 9.74172 21.4444 9.79103 20.8734 9.95969C20.3025 10.1283 19.7733 10.4125 19.3203 10.7936C18.8672 11.1747 18.5008 11.6444 18.2438 12.1727C17.9867 12.7009 17.8447 13.2766 17.8266 13.8625C17.8084 14.4484 17.9145 15.0316 18.1378 15.5744C18.361 16.1172 18.6966 16.6078 19.1227 17.0153C19.5488 17.4227 20.0559 17.7383 20.6119 17.942C21.1679 18.1457 21.7604 18.2328 22.3519 18.1984C22.9434 18.1641 23.5211 18.0091 24.0484 17.7433C24.5756 17.4775 25.0406 17.1067 25.4123 16.6547C25.7841 16.2027 26.0541 15.6794 26.2045 15.1197C26.3549 14.56 26.3822 13.9766 26.2844 13.4064C26.1867 12.8362 25.9662 12.2922 25.6375 11.8112C25.3087 11.3303 24.8794 10.9234 24.3781 10.6187C23.8769 10.3141 23.3156 10.1186 22.7312 10.0455C22.1469 9.97234 21.5531 10.0234 20.9906 10.1955C20.9906 10.1955 20.9906 10.1955 20.9906 10.1955" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            Account Settings
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="#" class="sidebar-link">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M9 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V9M15 15L21 9M15 9H21V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="main-content">
+                <div class="dashboard-header">
+                    <div>
+                        <h1 class="dashboard-title">Dashboard Overview</h1>
+                        <p class="dashboard-subtitle">Monitor your resume analysis performance at a glance.</p>
+                    </div>
+                    <button class="btn btn-primary">Analyze New Resume</button>
+                </div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-title">Total Resumes Analyzed</div>
+        <div class="stat-value" id="totalAnalyzed">0</div>
+        <div class="stat-description">+3 from last month</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-title">Average ATS Score</div>
+        <div class="stat-value" id="avgAtsScore">0%</div>
+        <div class="stat-description">+5% improvement</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-title">Last Analyzed Resume</div>
+        <div class="stat-value" id="lastAnalyzedName">—</div>
+        <div class="stat-description" id="lastAnalyzedDate">—</div>
+    </div>
+</div>
+
+
+                <div class="analysis-container">
+                    <div class="analysis-header">
+                        <h2 class="analysis-title">Analyzed Resumes</h2>
+                        <div class="controls">
+                            <input type="text" class="search-bar" placeholder="Search resumes...">
+                            <select class="search-bar">
+                                <option>All Status</option>
+                                <option>High Score</option>
+                                <option>Medium Score</option>
+                                <option>Low Score</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table class="resume-table">
+                            <thead>
+                                <tr>
+                                    <th>Resume Name</th>
+                                    <th>Date of Analysis</th>
+                                    <th>ATS Score</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="resumeTableBody">
+                                <tr>
+                                    <td>Senior Product Manager</td>
+                                    <td>Oct 12, 2023</td>
+                                    <td class="score-high">84%</td>
+                                    <td><button class="btn btn-secondary">View Report</button></td>
+                                </tr>
+                                <tr>
+                                    <td>UX Designer</td>
+                                    <td>Oct 10, 2023</td>
+                                    <td class="score-medium">67%</td>
+                                    <td><button class="btn btn-secondary">View Report</button></td>
+                                </tr>
+                                <tr>
+                                    <td>Software Engineer</td>
+                                    <td>Oct 5, 2023</td>
+                                    <td class="score-low">52%</td>
+                                    <td><button class="btn btn-secondary">View Report</button></td>
+                                </tr>
+                                <tr>
+                                    <td>Data Scientist</td>
+                                    <td>Oct 1, 2023</td>
+                                    <td class="score-high">89%</td>
+                                    <td><button class="btn btn-secondary">View Report</button></td>
+                                </tr>
+                                <tr>
+                                    <td>Marketing Manager</td>
+                                    <td>Sep 28, 2023</td>
+                                    <td class="score-medium">71%</td>
+                                    <td><button class="btn btn-secondary">View Report</button></td>
+                                </tr>
+                                <tr>
+                                    <td>Frontend Developer</td>
+                                    <td>Sep 25, 2023</td>
+                                    <td class="score-high">82%</td>
+                                    <td><button class="btn btn-secondary">View Report</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+<div class="insights-grid">
+    <div class="insight-card">
+        <h3 class="insight-title">Performance Insights</h3>
+        <ul class="insight-list">
+            <li class="insight-item">
+                <span>Highest ATS Score</span>
+                <span id="highestScore" class="score-high">--%</span>
+            </li>
+            <li class="insight-item">
+                <span>Lowest ATS Score</span>
+                <span id="lowestScore" class="score-low">--%</span>
+            </li>
+            <li class="insight-item">
+                <span>Most Common Improvement Area</span>
+                <span id="commonImprovement">--</span>
+            </li>
+        </ul>
+    </div>
+    <div class="insight-card">
+        <h3 class="insight-title">Score Distribution</h3>
+        <canvas id="scoreChart"></canvas>
+    </div>
+</div>
+
+            </div>
+        </div>
+    </div>
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+  const tbody = document.getElementById("resumeTableBody");
+  const totalAnalyzedEl = document.getElementById("totalAnalyzed");
+  const avgAtsScoreEl = document.getElementById("avgAtsScore");
+  const highScoreCountEl = document.getElementById("highScoreCount");
+  const mediumScoreCountEl = document.getElementById("mediumScoreCount");
+  const lowScoreCountEl = document.getElementById("lowScoreCount");
+  const lastAnalyzedNameEl = document.getElementById("lastAnalyzedName");
+  const lastAnalyzedDateEl = document.getElementById("lastAnalyzedDate");
+
+  try {
+    // Fetch dashboard data
+    const response = await fetch("http://127.0.0.1:5000/dashboard-data", {
+      credentials: "include",
+    });
+
+    const data = await response.json();
+
+    if (!data || data.error || !Array.isArray(data.analyses)) {
+      tbody.innerHTML = `<tr><td colspan="4">No resumes analyzed yet.</td></tr>`;
+      return;
+    }
+
+    // Sort by date (latest first)
+    const sortedByDate = data.analyses.sort(
+      (a, b) => new Date(b.analyzed_at) - new Date(a.analyzed_at)
+    );
+function shortenFilename(filename) {
+  const maxStart = 7;  // how many chars to keep from the start
+  const maxEnd = 7;    // how many chars to keep from the end
+
+  if (filename.length <= maxStart + maxEnd) return filename;
+
+  const start = filename.slice(0, maxStart);
+  const end = filename.slice(-maxEnd);
+  return `${start}...${end}`;
+}
+
+    // === Update last analyzed resume ===
+    const lastResume = sortedByDate[0];
+    if (lastResume) {
+      if (lastAnalyzedNameEl) lastAnalyzedNameEl.textContent = shortenFilename(lastResume.resume_name);
+      if (lastAnalyzedDateEl)
+        lastAnalyzedDateEl.textContent = "Analyzed on " + new Date(lastResume.analyzed_at).toLocaleDateString();
+    }
+    
+    // === Update summary stats ===
+    const totalResumes = data.analyses.length;
+    const avgAtsScore = data.analyses.reduce((acc, cur) => acc + cur.ats_score, 0) / totalResumes;
+    const highScores = data.analyses.filter(r => r.ats_score >= 80).length;
+    const mediumScores = data.analyses.filter(r => r.ats_score >= 60 && r.ats_score < 80).length;
+    const lowScores = data.analyses.filter(r => r.ats_score < 60).length;
+
+    if (totalAnalyzedEl) totalAnalyzedEl.textContent = totalResumes;
+    if (avgAtsScoreEl) avgAtsScoreEl.textContent = avgAtsScore.toFixed(1) + "%";
+    if (highScoreCountEl) highScoreCountEl.textContent = highScores;
+    if (mediumScoreCountEl) mediumScoreCountEl.textContent = mediumScores;
+    if (lowScoreCountEl) lowScoreCountEl.textContent = lowScores;
+
+    // === Populate the table ===
+    tbody.innerHTML = "";
+    sortedByDate.forEach((item) => {
+      const scoreClass =
+        item.ats_score >= 80
+          ? "score-high"
+          : item.ats_score >= 60
+          ? "score-medium"
+          : "score-low";
+
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${item.resume_name}</td>
+        <td>${new Date(item.analyzed_at).toLocaleDateString()}</td>
+        <td class="${scoreClass}">${item.ats_score}%</td>
+        <td>
+          <button class="btn btn-secondary view-report-btn" data-resume-id="${item.resume_id}">
+            View Report
+          </button>
+        </td>
+      `;
+      tbody.appendChild(row);
+    });
+
+  } catch (err) {
+    console.error("Error fetching dashboard data:", err);
+    tbody.innerHTML = `<tr><td colspan="4">Error loading data.</td></tr>`;
+  }
+});
+
+// === Handle "View Report" button click ===
+document.addEventListener("click", (e) => {
+  if (e.target.classList.contains("view-report-btn")) {
+    const resumeId = e.target.getAttribute("data-resume-id");
+    localStorage.setItem("selectedResumeId", resumeId);
+    // Redirect to report page
+    window.location.href = `test.html?resume_id=${resumeId}`;
+  }
+});
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const searchBar = document.querySelector(".search-bar");
+  const resumeRows = document.querySelectorAll(".resume-table tbody tr");
+
+  // Search Functionality
+  searchBar.addEventListener("input", function () {
+    const searchTerm = this.value.toLowerCase();
+    resumeRows.forEach((row) => {
+      const resumeName = row.cells[0].textContent.toLowerCase();
+      row.style.display = resumeName.includes(searchTerm) ? "" : "none";
+    });
+  });
+
+  // Filter Functionality
+  const filterSelect = document.querySelectorAll(".search-bar")[1];
+  filterSelect.addEventListener("change", function () {
+    const filterValue = this.value;
+    resumeRows.forEach((row) => {
+      const scoreText = row.cells[2].textContent;
+      const scoreValue = parseInt(scoreText);
+      if (
+        filterValue === "All Status" ||
+        (filterValue === "High Score" && scoreValue >= 80) ||
+        (filterValue === "Medium Score" &&
+          scoreValue >= 60 &&
+          scoreValue < 80) ||
+        (filterValue === "Low Score" && scoreValue < 60)
+      ) {
+        row.style.display = "";
+      } else {
+        row.style.display = "none";
+      }
+    });
+  });
+});
+</script>
+
+</body>
+</html>

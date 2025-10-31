@@ -6,17 +6,21 @@ from flask import send_from_directory
 from flask_cors import CORS
 from flask_mail import Mail, Message
 from threading import Thread
+from flask import Flask
+from dotenv import load_dotenv
+import os
 
+load_dotenv()
 
 
 app = Flask(__name__)
-app.secret_key = "your-secret-key"
-# ==== Flask-Mail Config ====
+app.secret_key = os.getenv("SECRET_KEY")
+#flask mail
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = 'mohdimransid786@gmail.com'  # your gmail
-app.config['MAIL_PASSWORD'] = 'cdfq cong ygtk hxlw'  # not your Gmail password, use App Password
+app.config['MAIL_USERNAME'] = os.getenv("MAIL_USERNAME")
+app.config['MAIL_PASSWORD'] = os.getenv("MAIL_PASSWORD")
 mail = Mail(app)
 CORS(
     app,
@@ -26,26 +30,27 @@ CORS(
     expose_headers=["Content-Type", "Authorization"]
 )
 
-FRONTEND_URL = "http://127.0.0.1:5500"
-
-# ===== Supabase Config =====
+FRONTEND_URL = "http://127.0.0.1:5500/"
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+# supabase
 SUPABASE_URL = "https://zcckaqsaqkvwvgjzyjvf.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpjY2thcXNhcWt2d3Znanp5anZmIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MDE1ODQyNSwiZXhwIjoyMDc1NzM0NDI1fQ.6YNwlNjaPQHMPgR4ABb8mpb0WviHOnRM-o1CDLYCL3g"
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# ===== Google OAuth Setup =====
+#google auth
 oauth = OAuth(app)
 google = oauth.register(
     name='google',
-    client_id='1042555508326-46017nt97tjp54ntvg0ofi1mbv2l5lvk.apps.googleusercontent.com',
-    client_secret='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',
+    client_id=os.getenv("GOOGLE_CLIENT_ID"),
+    client_secret=os.getenv("GOOGLE_CLIENT_SECRET"),
     server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
     client_kwargs={
         'scope': 'openid email profile'
     }
 )
-
-# ===== Routes =====
+resume_t=''
+# route
 @app.route('/dashboard')
 def dashboard():
     return send_from_directory('static', 'dashboard.html')
@@ -58,14 +63,12 @@ def google_login():
 
 @app.route('/auth/google/callback')
 def google_callback():
-    token = google.authorize_access_token()  # get access token
-    user_info = google.userinfo()  # ✅ Authlib method that fetches user info for you
-    # user_info = google.get('userinfo').json()
-    # Extract user details
+    token = google.authorize_access_token()  
+    user_info = google.userinfo()  
     email = user_info['email']
     name = user_info.get('name', 'User')
     picture = user_info.get('picture', '')
-    # Store or update user in Supabase
+
     existing = supabase.table('users').select('*').eq('email', email).execute()
     if len(existing.data) == 0:
         supabase.table('users').insert({
@@ -73,9 +76,9 @@ def google_callback():
             'name': name,
             'picture': picture
         }).execute()
-    # Save session
+ 
     session['user'] = user_info
-    # Redirect to frontend dashboard
+
     return redirect(f"{FRONTEND_URL}/frontend/dashboard.html?name={user_info['name']}")
 
 @app.route('/user')
@@ -122,14 +125,12 @@ def uploadresume():
     save_path = os.path.join('uploads', filename)
     resume_file.save(save_path)
 
-    # Get user id from Supabase
     user_query = supabase.table('users').select('id').eq('email', user['email']).execute()
     if not user_query.data:
         return jsonify({'error': 'User not found in database'}), 404
 
     user_id = user_query.data[0]['id']
 
-    # Insert resume entry
     resume_insert = supabase.table('resumes').insert({
         'user_id': user_id,
         'user_email': user['email'],
@@ -143,10 +144,9 @@ def uploadresume():
 
     resume_id = resume_insert.data[0]['id']
 
-    # 🔥 Start analysis in background thread
+
     Thread(target=background_resume_analysis, args=(resume_id, save_path, user['email'])).start()
 
-    # ✅ Immediate response to user
     return jsonify({
         'message': 'Your resume is being analyzed. You will receive your analyzed report via email within 5 minutes.',
         'resume_id': resume_id
@@ -167,17 +167,16 @@ def background_resume_analysis(resume_id, file_path, user_email):
             except:
                 result = {"error": "Invalid JSON output", "raw": result}
 
-        # Store analysis
         supabase.table('resumeanalysis').insert({
             'resume_id': resume_id,
             'analyzed_json': json.dumps(result),
             'analyzed_at': datetime.utcnow().isoformat()
         }).execute()
 
-        # Update status
+      
         supabase.table('resumes').update({'status': 'completed'}).eq('id', resume_id).execute()
 
-        # ✅ Send email with analysis link
+       
         send_analysis_email(user_email, resume_id)
 
     except Exception as e:
@@ -187,7 +186,7 @@ def background_resume_analysis(resume_id, file_path, user_email):
 import os
 import openai
 import google.generativeai as genai
-genai.configure(api_key="AIzaSyDi_2WfpIW_QKpAZuK9Vaj_ToCg5dU6PJA")
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 model = genai.GenerativeModel("models/gemini-2.5-flash")
 import fitz 
 import json
@@ -207,7 +206,7 @@ def latest_analysis():
     email = user.get('email')
     resume_id = request.args.get('resume_id')
 
-    # ======= FETCH RESUME ENTRY =======
+
     if resume_id:
         resume_data = (
             supabase.table('resumes')
@@ -233,7 +232,7 @@ def latest_analysis():
     resume_id = resume_entry['id']
     resume_filename = resume_entry['resume_filename']
 
-    # ======= CHECK EXISTING ANALYSIS =======
+
     existing_analysis = (
         supabase.table('resumeanalysis')
         .select('resume_namee, analyzed_json, analyzed_at')
@@ -250,19 +249,19 @@ def latest_analysis():
         except:
             parsed_json = {"error": "Invalid stored JSON", "raw": analysis_json}
 
-        # ✅ Add resume filename and id for frontend preview
         parsed_json['resume_filename'] = resume_filename
         parsed_json['resume_id'] = resume_id
 
         return jsonify(parsed_json)
 
-    # ======= IF NO EXISTING ANALYSIS, RE-ANALYZE =======
+
     file_path = os.path.join('uploads', resume_filename)
     if not os.path.exists(file_path):
         return jsonify({"error": "Resume file missing on server"}), 404
 
     try:
         text = extract_pdf(file_path)
+        resume_t=text
         result = resume_analyzer(text)
 
         if isinstance(result, str):
@@ -271,11 +270,11 @@ def latest_analysis():
             except:
                 result = {"error": "Analyzer returned non-JSON text", "raw": result}
 
-        # ✅ Add filename here as well (for immediate frontend use)
+  
         result['resume_filename'] = resume_filename
         result['resume_id'] = resume_id
 
-        # ======= SAVE TO SUPABASE =======
+      
         supabase.table('resumeanalysis').insert({
             'resume_namee': resume_filename,
             'resume_id': resume_id,
@@ -332,7 +331,7 @@ def resume_analyzer(resume_text):
         response = model.generate_content(prompt)
         content = response.text.strip()
 
-        # 🔧 Fix: Remove markdown fences like ```json ... ```
+       
         if content.startswith("```"):
             content = content.strip("`")
             content = content.replace("json", "", 1).strip()
@@ -340,7 +339,7 @@ def resume_analyzer(resume_text):
         try:
             result = json.loads(content)
         except json.JSONDecodeError:        
-            # Try a fallback cleaning method
+       
             cleaned = content.replace("```", "").replace("json", "").strip()
             try:
 
@@ -366,7 +365,6 @@ def dashboard_data():
 
     email = user.get('email')
 
-    # Get all resumes of this user
     resumes = supabase.table('resumes').select('*').eq('user_email', email).execute()
     if not resumes.data:
         return jsonify({"total": 0, "analyses": []})
@@ -380,7 +378,6 @@ def dashboard_data():
     if total == 0:
         return jsonify({"total": 0, "analyses": []})
 
-    # Parse ATS data
     ats_scores = []
     parsed_data = []
     for a in analyses.data:
@@ -425,12 +422,10 @@ def job_match():
     data = request.json
     job_desc = data.get('job_description')
     resume_id = data.get('resume_id')
-    use_model = data.get('model', 'tfidf')  # choose between 'tfidf' or 'bert'
-
+    use_model = data.get('model', 'tfidf') 
     if not job_desc:
         return jsonify({"error": "Job description required"}), 400
 
-    # ====== Fetch resume text ======
     if resume_id:
         resume_data = (
             supabase.table('resumes')
@@ -453,13 +448,13 @@ def job_match():
     if not resume_text.strip():
         return jsonify({"error": "No resume text provided"}), 400
 
-    # ====== Compute similarity ======
+   
     if use_model == 'bert':
         score = job_match_score_bert(resume_text, job_desc)
     else:
         score = job_match_score_tfidf(resume_text, job_desc)
 
-    # ====== Optional keyword analysis ======
+
     job_keywords = set(clean_text(job_desc).split())
     resume_keywords = set(clean_text(resume_text).split())
     missing = list(job_keywords - resume_keywords)
@@ -479,7 +474,7 @@ def get_resume_analysis(resume_id):
         return jsonify({"error": "Not logged in"}), 401
 
     try:
-        # fetch from Supabase
+     
         analysis = (
             supabase.table("resumeanalysis")
             .select("*")
@@ -517,15 +512,12 @@ def serve_uploaded_resume(filename):
 
 
 
-# =========================
-# 🔥 JOB MATCH PREDICTION
-# =========================
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from sentence_transformers import SentenceTransformer, util
 import re
 
-# optional: preload BERT model for semantic similarity
+
 bert_model = SentenceTransformer('all-MiniLM-L6-v2')
 
 def clean_text(text):
@@ -548,10 +540,10 @@ def job_ai(job_desc):
 
     response = model.generate_content(prompt)
     content = response.text.strip().lower()
-    # Clean and format
+   
     content = re.sub(r'[^a-z0-9,\s\+\#\.]', ' ', content)
     skills = [skill.strip() for skill in content.split(",") if skill.strip()]
-    skills = list(set(skills))  # remove duplicates
+    skills = list(set(skills)) 
     return ", ".join(skills)
 
 def job_match_score_tfidf(resume_text, job_desc):
@@ -564,17 +556,96 @@ def job_match_score_tfidf(resume_text, job_desc):
     vectorizer = TfidfVectorizer(stop_words='english')
     vectors = vectorizer.fit_transform([resume_clean, job_clean])
     similarity = cosine_similarity(vectors[0], vectors[1])[0][0]
-
     return round(similarity * 100, 2)
 
 def job_match_score_bert(resume_text, job_desc):
     resume_keywords = job_ai(resume_text)
     job_keywords = job_ai(job_desc)
-
     embeddings = bert_model.encode([resume_keywords, job_keywords])
     similarity = util.cos_sim(embeddings[0], embeddings[1])
     return round(float(similarity) * 100, 2)
 
+@app.route('/recommend-jobs', methods=['GET'])
+def recommend_jobs():
+    user = session.get('user')
+    if not user:
+        return jsonify({"error": "Not logged in"}), 401
+
+    resume_id = request.args.get('resume_id')
+
+    if not resume_id:
+        return jsonify({"error": "Missing resume_id"}), 400
+
+    resume_data = (
+        supabase.table('resumes')
+        .select('resume_filename')
+        .eq('id', resume_id)
+        .eq('user_email', user['email'])
+        .execute()
+    )
+    if not resume_data.data:
+        return jsonify({"error": "Resume not found"}), 404
+
+    file_path = os.path.join('uploads', resume_data.data[0]['resume_filename'])
+    if not os.path.exists(file_path):
+        return jsonify({"error": "Resume file missing on server"}), 404
+
+    resume_text = extract_pdf(file_path)
+
+    if not resume_text.strip():
+        return jsonify({"error": "No resume text found"}), 400
+
+    jobs = [
+    {"title": "Data Analyst", "desc": "Python, Excel, SQL, Tableau"},
+    {"title": "Backend Developer", "desc": "Flask, Django, PostgreSQL"},
+    {"title": "ML Engineer", "desc": "TensorFlow, Python, NLP, Data"},
+    {"title": "Frontend Developer", "desc": "React, JavaScript, HTML, CSS"},
+    {"title": "Full Stack Developer", "desc": "React, Node.js, MongoDB, Express"},
+    {"title": "DevOps Engineer", "desc": "Docker, Kubernetes, CI/CD, AWS"},
+    {"title": "Cloud Engineer", "desc": "AWS, Azure, Terraform, Networking"},
+    {"title": "Cybersecurity Analyst", "desc": "Network Security, SIEM, Firewalls"},
+    {"title": "Mobile App Developer", "desc": "Flutter, Dart, Firebase"},
+    {"title": "Game Developer", "desc": "Unity, C#, 3D Models"},
+    {"title": "AI Researcher", "desc": "Deep Learning, PyTorch, LLMs"},
+    {"title": "Business Analyst", "desc": "Excel, PowerBI, Communication"},
+    {"title": "System Administrator", "desc": "Linux, Shell Script, VMs"},
+    {"title": "Network Engineer", "desc": "Cisco, Routing, Switching"},
+    {"title": "UI/UX Designer", "desc": "Figma, Wireframing, Prototyping"},
+    {"title": "Product Manager", "desc": "Roadmaps, Scrum, Market Research"},
+    {"title": "QA Tester", "desc": "Selenium, Regression, Test Cases"},
+    {"title": "Automation Engineer", "desc": "Python, Jenkins, CI pipelines"},
+    {"title": "ETL Developer", "desc": "Informatica, SQL, Data Pipelines"},
+    {"title": "Database Administrator", "desc": "MySQL, Oracle, Backup, Tuning"},
+    {"title": "Data Engineer", "desc": "Airflow, Spark, Hadoop, Data Lakes"},
+    {"title": "Solution Architect", "desc": "Cloud Design, Microservices"},
+    {"title": "Salesforce Developer", "desc": "Apex, Lightning, CRM"},
+    {"title": "Android Developer", "desc": "Kotlin, Jetpack Compose, SQLite"},
+    {"title": "iOS Developer", "desc": "Swift, Xcode, UI Kit"},
+    {"title": "Blockchain Developer", "desc": "Solidity, Ethereum, Smart Contracts"},
+    {"title": "Robotics Engineer", "desc": "ROS, C++, Embedded Systems"},
+    {"title": "Embedded Systems Engineer", "desc": "C, IoT, Microcontrollers"},
+    {"title": "Big Data Engineer", "desc": "Kafka, Spark, HDFS"},
+    {"title": "Content Writer", "desc": "SEO, Research, Blogging"},
+    {"title": "Technical Support Specialist", "desc": "Troubleshooting, Customer Support"},
+    {"title": "Data Scientist", "desc": "Machine Learning, Pandas, Statistics"},
+    {"title": "Digital Marketing Manager", "desc": "Google Ads, SEO, Social Media"},
+    {"title": "Operations Manager", "desc": "Team Coordination, Planning"},
+    {"title": "HR Recruiter", "desc": "Hiring, Interviews, Talent Sourcing"}
+    ]
+
+
+    corpus = [resume_text] + [job["desc"] for job in jobs]
+    vectorizer = TfidfVectorizer()
+    vectors = vectorizer.fit_transform(corpus)
+    similarities = cosine_similarity(vectors[0:1], vectors[1:]).flatten()
+
+    for i, score in enumerate(similarities):
+        jobs[i]["job_title"] = jobs[i]["title"]
+        jobs[i]["match"] = round(score * 100, 2)
+
+    jobs.sort(key=lambda x: x["match"], reverse=True)
+
+    return jsonify({"recommendations": jobs[:3]})
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -1264,52 +1264,85 @@
             });
 
         // Fetch latest analysis
-        async function fetchLatestAnalysis() {
-            try {
-                const params = new URLSearchParams(window.location.search);
-                const resumeId = params.get("resume_id");
+// Fetch latest analysis
+async function fetchLatestAnalysis() {
+    try {
+        const params = new URLSearchParams(window.location.search);
+        const resumeId = params.get("resume_id");
 
-                if (!resumeId) {
-                    alert("No resume ID provided!");
-                    return;
-                }
-
-                // Step 1: Get resume name from dashboard data
-                const res = await fetch('http://127.0.0.1:5000/dashboard-data', {
-                    method: 'GET',
-                    credentials: 'include'
-                });
-
-                const data = await res.json();
-                const analyses = data.analyses || [];
-                const found = analyses.find(item => item.resume_id === resumeId);
-
-                if (found) {
-                    const resumeName = found.resume_name;
-                    console.log("Resume name:", resumeName);
-                    await loadPDF(resumeName);
-                } else {
-                    console.log("No matching resume found for ID:", resumeId);
-                }
-
-                // ✅ Step 2: Fetch detailed analysis for dashboard
-                const res2 = await fetch(`http://127.0.0.1:5000/latest-analysis?resume_id=${resumeId}`, {
-                    credentials: "include"
-                });
-
-                const analysisData = await res2.json();
-                if (analysisData.error) {
-                    console.error(analysisData.error);
-                    return;
-                }
-
-                // === Update dashboard ===
-                updateDashboard(analysisData);
-
-            } catch (err) {
-                console.error("Error fetching analysis:", err);
-            }
+        if (!resumeId) {
+            alert("No resume ID provided!");
+            return;
         }
+
+        // Step 1: Get resume name from dashboard data
+        const res = await fetch('http://127.0.0.1:5000/dashboard-data', {
+            method: 'GET',
+            credentials: 'include'
+        });
+
+        const data = await res.json();
+        const analyses = data.analyses || [];
+        const found = analyses.find(item => item.resume_id === resumeId);
+
+        if (found) {
+            const resumeName = found.resume_name;
+            console.log("Resume name:", resumeName);
+            await loadPDF(resumeName);
+        } else {
+            console.log("No matching resume found for ID:", resumeId);
+        }
+
+        // ✅ Step 2: Fetch detailed analysis for dashboard
+        const res2 = await fetch(`http://127.0.0.1:5000/latest-analysis?resume_id=${resumeId}`, {
+            credentials: "include"
+        });
+        const analysisData = await res2.json(); // <-- Declare BEFORE using it
+
+        if (analysisData.error) {
+            console.error(analysisData.error);
+            return;
+        }
+
+        // === Update dashboard ===
+        updateDashboard(analysisData);
+
+        // ✅ Step 3: Fetch job recommendations
+        const recom = await fetch(`http://127.0.0.1:5000/recommend-jobs?resume_id=${resumeId}`, {
+            method: "GET",
+            credentials: "include"
+        });
+
+        if (!recom.ok) {
+            console.error("Failed to fetch job recommendations:", recom.statusText);
+            return;
+        }
+
+        const recomData = await recom.json();
+        console.log("Job Recommendations:", recomData);
+
+        const container = document.querySelector(".job-cards");
+        if (recomData.recommendations && recomData.recommendations.length > 0) {
+            container.innerHTML = recomData.recommendations.map(job => `
+                <div class="job-card">
+                    <div class="job-title">${job.job_title}</div>
+                    <div class="job-match">
+                        <div class="match-bar">
+                            <div class="match-fill" style="width: ${job.match}%"></div>
+                        </div>
+                        <div class="match-percent">${job.match}%</div>
+                    </div>
+                </div>
+            `).join("");
+        } else {
+            container.innerHTML = `<p>No job recommendations found for this resume.</p>`;
+        }
+
+    } catch (err) {
+        console.error("Error fetching analysis:", err);
+    }
+}
+
 
         // === Load PDF ===
         async function loadPDF(resumeName) {

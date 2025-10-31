@@ -434,6 +434,7 @@
                 overflow-x: auto;
             }
         }
+        
     </style>
 </head>
 <body>
@@ -597,10 +598,7 @@
                 <span>Lowest ATS Score</span>
                 <span id="lowestScore" class="score-low">--%</span>
             </li>
-            <li class="insight-item">
-                <span>Most Common Improvement Area</span>
-                <span id="commonImprovement">--</span>
-            </li>
+ 
         </ul>
     </div>
     <div class="insight-card">
@@ -612,6 +610,8 @@
             </div>
         </div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <script>
 document.addEventListener("DOMContentLoaded", async () => {
   const tbody = document.getElementById("resumeTableBody");
@@ -665,13 +665,17 @@ function shortenFilename(filename) {
     const highScores = data.analyses.filter(r => r.ats_score >= 80).length;
     const mediumScores = data.analyses.filter(r => r.ats_score >= 60 && r.ats_score < 80).length;
     const lowScores = data.analyses.filter(r => r.ats_score < 60).length;
-
+    const highestScore = Math.max(...data.analyses.map(r => r.ats_score));
+    const lowestScore = Math.min(...data.analyses.map(r => r.ats_score));
     if (totalAnalyzedEl) totalAnalyzedEl.textContent = totalResumes;
     if (avgAtsScoreEl) avgAtsScoreEl.textContent = avgAtsScore.toFixed(1) + "%";
     if (highScoreCountEl) highScoreCountEl.textContent = highScores;
     if (mediumScoreCountEl) mediumScoreCountEl.textContent = mediumScores;
     if (lowScoreCountEl) lowScoreCountEl.textContent = lowScores;
-
+    if (document.getElementById("highestScore"))
+      document.getElementById("highestScore").textContent = highestScore + "%";
+    if (document.getElementById("lowestScore"))
+      document.getElementById("lowestScore").textContent = lowestScore + "%";
     // === Populate the table ===
     tbody.innerHTML = "";
     sortedByDate.forEach((item) => {
@@ -695,6 +699,47 @@ function shortenFilename(filename) {
       `;
       tbody.appendChild(row);
     });
+    // === Render Score Distribution Chart ===
+const ctx = document.getElementById("scoreChart").getContext("2d");
+
+const scoreChart = new Chart(ctx, {
+  type: "doughnut", // or 'bar'
+  data: {
+    labels: ["High (80-100%)", "Medium (60-79%)", "Low (<60%)"],
+    datasets: [
+      {
+        label: "Resume ATS Scores",
+        data: [highScores, mediumScores, lowScores],
+        backgroundColor: [
+          "rgba(75, 192, 192, 0.7)",   // greenish for high
+          "rgba(255, 205, 86, 0.7)",   // yellowish for medium
+          "rgba(255, 99, 132, 0.7)",   // reddish for low
+        ],
+        borderColor: [
+          "rgba(75, 192, 192, 1)",
+          "rgba(255, 205, 86, 1)",
+          "rgba(255, 99, 132, 1)",
+        ],
+        borderWidth: 1,
+      },
+    ],
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: "bottom",
+        labels: { color: "#fff" },
+      },
+      title: {
+        display: true,
+        text: "ATS Score Distribution",
+        color: "#fff",
+      },
+    },
+  },
+});
+
 
   } catch (err) {
     console.error("Error fetching dashboard data:", err);
